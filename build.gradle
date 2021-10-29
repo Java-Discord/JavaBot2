@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group 'net.javadiscord'
+version '1.0.0-SNAPSHOT'
+
+sourceCompatibility = 16
+targetCompatibility = 16
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.javacord:javacord:3.3.2'
+    
+    implementation 'org.yaml:snakeyaml:1.29'
+    implementation 'com.google.code.gson:gson:2.8.8'
+
+    // Persistence Dependencies
+    implementation 'org.mongodb:mongodb-driver:3.12.10'
+    implementation 'org.postgresql:postgresql:42.3.0'
+
+    // Lombok annotations
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    // JUnit tests
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+jar {
+    manifest {
+        attributes("Manifest-Version": "1.0", "Main-Class": "net.javadiscord.javabot2.Bot")
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
