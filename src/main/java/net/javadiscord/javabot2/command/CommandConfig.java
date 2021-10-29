@@ -4,6 +4,7 @@ import lombok.Data;
 import org.javacord.api.interaction.SlashCommandBuilder;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Simple DTO representing a top-level Discord slash command.
@@ -52,5 +53,17 @@ public class CommandConfig {
 			", subCommandGroups=" + Arrays.toString(subCommandGroups) +
 			", handler=" + handler +
 			'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof CommandConfig that)) return false;
+		return getName().equals(that.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getName());
 	}
 }

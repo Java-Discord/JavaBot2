@@ -1,10 +1,8 @@
 package net.javadiscord.javabot2.command;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
 @Data
-@Slf4j
 public class CommandPrivilegeConfig {
 	private String type;
 	private boolean enabled = true;
