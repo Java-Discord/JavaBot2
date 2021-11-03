@@ -1,15 +1,15 @@
 package net.javadiscord.javabot2.command;
 
+import lombok.extern.slf4j.Slf4j;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
+import org.javacord.api.interaction.ServerSlashCommandPermissionsBuilder;
 import org.javacord.api.interaction.SlashCommandBuilder;
+import org.javacord.api.interaction.SlashCommandPermissions;
 import org.javacord.api.listener.interaction.SlashCommandCreateListener;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -17,12 +17,13 @@ import java.util.concurrent.CompletableFuture;
  * users in servers where the bot is active, and responding to them by calling
  * the appropriate {@link SlashCommandHandler}.
  */
+@Slf4j
 public final class SlashCommandListener implements SlashCommandCreateListener {
 	private final Map<Long, SlashCommandHandler> commandHandlers = new HashMap<>();
 
 	public SlashCommandListener(DiscordApi api) {
 		registerSlashCommands(api, "commands/moderation.yaml")
-				.thenAccept(commandHandlers::putAll);
+				.thenAcceptAsync(commandHandlers::putAll);
 	}
 
 	@Override
@@ -32,17 +33,16 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 			try {
 				handler.handle(event.getSlashCommandInteraction()).respond();
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("An error occurred while handling a slash command.", e);
 				event.getSlashCommandInteraction().createImmediateResponder()
 						.setFlags(MessageFlag.EPHEMERAL)
-						.append("An error occurred and the command could not be executed.")
+						.append("An error occurred.")
 						.respond();
 			}
 		} else {
 			event.getSlashCommandInteraction().createImmediateResponder()
 					.setFlags(MessageFlag.EPHEMERAL)
-					.append("There is no associated handler for this command.")
-					.append("Please contact an administrator if this error persists.")
+					.append("There is no associated handler for this command. Please contact an administrator if this error persists.")
 					.respond();
 		}
 	}
@@ -52,15 +52,20 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 		var handlers = initializeHandlers(commandConfigs);
 		List<SlashCommandBuilder> commandBuilders = Arrays.stream(commandConfigs)
 				.map(CommandConfig::toData).toList();
-		return api.bulkOverwriteGlobalSlashCommands(commandBuilders)
-				.thenApply(slashCommands -> {
+		return deleteAllSlashCommands(api)
+				.thenComposeAsync(unused -> api.bulkOverwriteGlobalSlashCommands(commandBuilders))
+				.thenComposeAsync(slashCommands -> {
 					Map<Long, SlashCommandHandler> handlersById = new HashMap<>();
+					Map<String, Long> nameToId = new HashMap<>();
 					for (var slashCommand : slashCommands) {
 						var handler = handlers.get(slashCommand.getName());
 						handlersById.put(slashCommand.getId(), handler);
+						nameToId.put(slashCommand.getName(), slashCommand.getId());
 					}
-					// TODO: register permissions!
-					return handlersById;
+					log.info("Registered all slash commands.");
+					return updatePermissions(api, commandConfigs, nameToId)
+							.thenRun(() -> log.info("Updated permissions for all slash commands."))
+							.thenApplyAsync(unused -> handlersById);
 				});
 	}
 
@@ -72,12 +77,38 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 					Class<?> handlerClass = Class.forName(commandConfig.getHandler());
 					handlers.put(commandConfig.getName(), (SlashCommandHandler) handlerClass.getConstructor().newInstance());
 				} catch (Exception e) {
-					e.printStackTrace();
+					log.error("An error occurred when trying to get new instance of a slash command handler class.", e);
 				}
 			} else {
-				System.err.println("Command " + commandConfig.getName() + " does not have an associated slash command.");
+				log.error("Command {} does not have an associated slash command handler.", commandConfig.getName());
 			}
 		}
 		return handlers;
+	}
+
+	private CompletableFuture<Void> deleteAllSlashCommands(DiscordApi api) {
+		var serverDeleteFutures = api.getServers().stream()
+				.map(server -> api.bulkOverwriteServerSlashCommands(server, List.of()))
+				.toList();
+		return api.bulkOverwriteGlobalSlashCommands(List.of())
+				.thenComposeAsync(unused -> CompletableFuture.allOf(serverDeleteFutures.toArray(new CompletableFuture[0])));
+	}
+
+	private CompletableFuture<Void> updatePermissions(DiscordApi api, CommandConfig[] commandConfigs, Map<String, Long> nameToId) {
+		List<CompletableFuture<?>> permissionFutures = new ArrayList<>();
+		for (var server : api.getServers()) {
+			List<ServerSlashCommandPermissionsBuilder> permissionsBuilders = new ArrayList<>();
+			for (var config : commandConfigs) {
+				if (config.getPrivileges() != null && config.getPrivileges().length > 0) {
+					List<SlashCommandPermissions> permissions = Arrays.stream(config.getPrivileges())
+							.map(p -> p.toData(server)).toList();
+					long commandId = nameToId.get(config.getName());
+					var builder = new ServerSlashCommandPermissionsBuilder(commandId, permissions);
+					permissionsBuilders.add(builder);
+				}
+			}
+			permissionFutures.add(api.batchUpdateSlashCommandPermissions(server, permissionsBuilders));
+		}
+		return CompletableFuture.allOf(permissionFutures.toArray(new CompletableFuture[0]));
 	}
 }

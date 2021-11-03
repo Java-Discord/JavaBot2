@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  # MongoDB No-SQL Document Database
+  mongo:
+    image: mongo
+    container_name: javabot_mongodb
+    restart: always
+    ports:
+      - "27171:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+  # Web-Based Admin Tool for MongoDB. Connect via http://localhost:5050
+  mongo-express:
+    image: mongo-express
+    container_name: javabot_mongo-express
+    restart: always
+    ports:
+      - "5050:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+  # Postgresql Relational Database
+  postgres:
+    image: postgres:latest
+    container_name: javabot_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: javabot_dev
+      POSTGRES_PASSWORD: javabot_dev_pass
+      POSTGRES_DB: javabot
+    ports:
+      - "27172:5432"
+
+  # Admin site for postgres. Connect via http://localhost:5051
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: javabot_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    depends_on:
+      - postgres
+    ports:
+      - "5051:80"
