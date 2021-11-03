@@ -1,8 +1,9 @@
 package net.javadiscord.javabot2.command;
 
 import lombok.extern.slf4j.Slf4j;
+import net.javadiscord.javabot2.command.data.CommandConfig;
+import net.javadiscord.javabot2.command.data.CommandDataLoader;
 import org.javacord.api.DiscordApi;
-import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.ServerSlashCommandPermissionsBuilder;
 import org.javacord.api.interaction.SlashCommandBuilder;
@@ -21,6 +22,13 @@ import java.util.concurrent.CompletableFuture;
 public final class SlashCommandListener implements SlashCommandCreateListener {
 	private final Map<Long, SlashCommandHandler> commandHandlers = new HashMap<>();
 
+	/**
+	 * Constructs a new slash command listener using the given Discord api, and
+	 * loads commands from configuration YAML files according to the list of
+	 * resources.
+	 * @param api The Discord api to use.
+	 * @param resources The list of classpath resources to load commands from.
+	 */
 	public SlashCommandListener(DiscordApi api, String... resources) {
 		registerSlashCommands(api, resources)
 				.thenAcceptAsync(commandHandlers::putAll);
@@ -32,17 +40,18 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 		if (handler != null) {
 			try {
 				handler.handle(event.getSlashCommandInteraction()).respond();
+			} catch (ResponseException e) {
+				e.getResponseBuilder().respond();
 			} catch (Exception e) {
 				log.error("An error occurred while handling a slash command.", e);
-				event.getSlashCommandInteraction().createImmediateResponder()
-						.setFlags(MessageFlag.EPHEMERAL)
-						.append("An error occurred.")
+				Responses.errorBuilder(event)
+						.message("An error occurred while executing the command.")
 						.respond();
 			}
 		} else {
-			event.getSlashCommandInteraction().createImmediateResponder()
-					.setFlags(MessageFlag.EPHEMERAL)
-					.append("There is no associated handler for this command. Please contact an administrator if this error persists.")
+			Responses.warningBuilder(event)
+					.title("No Handler")
+					.message("There is no associated handler for this command. Please contact an administrator if this error persists.")
 					.respond();
 		}
 	}

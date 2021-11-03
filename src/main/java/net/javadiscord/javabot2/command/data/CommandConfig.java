@@ -1,4 +1,4 @@
-package net.javadiscord.javabot2.command;
+package net.javadiscord.javabot2.command.data;
 
 import lombok.Data;
 import org.javacord.api.interaction.SlashCommandBuilder;

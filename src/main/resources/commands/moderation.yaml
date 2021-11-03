@@ -1,20 +1,16 @@
 - name: purge
   description: Deletes messages from a channel.
-  handler: net.javadiscord.javabot2.systems.moderation.PruneCommand
+  handler: net.javadiscord.javabot2.systems.moderation.PurgeCommand
   enabledByDefault: false
   privileges:
     - type: ROLE
       id: moderation.staffRoleId
   options:
-    - name: amount
-      description: Number of messages to remove. If left blank, all messages will be removed.
-      type: INTEGER
-      required: false
+    - name: until
+      description: All messages from now up to (and including) the given message id will be removed.
+      type: STRING
+      required: true
     - name: user
       description: The user whose messages to remove. If left blank, messages from any user are removed.
       type: USER
-      required: false
-    - name: archive
-      description: If true, save removed messages in an archive.
-      type: BOOLEAN
       required: false
