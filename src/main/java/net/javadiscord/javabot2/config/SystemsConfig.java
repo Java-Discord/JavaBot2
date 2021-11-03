@@ -8,6 +8,8 @@ import lombok.Data;
  */
 @Data
 public class SystemsConfig {
+	private static final int DEFAULT_ASYNC_POOL_SIZE = 4;
+
 	/**
 	 * The token used to create the Discord bot instance.
 	 */
@@ -22,7 +24,7 @@ public class SystemsConfig {
 	 * The number of threads to allocate to the bot's general purpose async
 	 * thread pool.
 	 */
-	private int asyncPoolSize = 4;
+	private int asyncPoolSize = DEFAULT_ASYNC_POOL_SIZE;
 
 	/**
 	 * Configuration for the Hikari connection pool that's used for the bot's
@@ -30,12 +32,16 @@ public class SystemsConfig {
 	 */
 	private HikariConfig hikariConfig = new HikariConfig();
 
+	/**
+	 * Configuration settings for the Hikari connection pool.
+	 */
 	@Data
 	public static class HikariConfig {
+		private static final int DEFAULT_POOL_SIZE = 5;
 		private String jdbcUrl = "jdbc:postgresql://localhost:27172/javabot";
 		private String username = "javabot_dev";
 		private String password = "javabot_dev_pass";
-		private int maximumPoolSize = 5;
+		private int maximumPoolSize = DEFAULT_POOL_SIZE;
 		private String connectionInitSql = "SET TIME ZONE 'UTC'";
 	}
 }

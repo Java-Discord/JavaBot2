@@ -16,6 +16,10 @@ public class OptionConfig {
 	private String type;
 	private boolean required;
 
+	/**
+	 * Converts this config data into data that's ready for the Discord API.
+	 * @return The prepared data.
+	 */
 	public SlashCommandOptionBuilder toData() {
 		return new SlashCommandOptionBuilder()
 				.setType(SlashCommandOptionType.valueOf(this.type.toUpperCase()))

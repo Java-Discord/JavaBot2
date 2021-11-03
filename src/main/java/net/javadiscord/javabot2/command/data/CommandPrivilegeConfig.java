@@ -11,6 +11,10 @@ import org.javacord.api.interaction.SlashCommandPermissionType;
 import org.javacord.api.interaction.SlashCommandPermissions;
 import org.javacord.api.interaction.SlashCommandPermissionsBuilder;
 
+/**
+ * Simple DTO that represents permissions information that can be attached to
+ * a slash command.
+ */
 @Data
 @Slf4j
 public class CommandPrivilegeConfig {
@@ -18,6 +22,11 @@ public class CommandPrivilegeConfig {
 	private boolean enabled = true;
 	private String id;
 
+	/**
+	 * Converts this config data into data that's ready for the Discord API.
+	 * @param server The server that the permissions will apply to.
+	 * @return The prepared data.
+	 */
 	public SlashCommandPermissions toData(Server server) {
 		if (this.type.equalsIgnoreCase(SlashCommandPermissionType.USER.name())) {
 			User user = server.getMemberById(this.id).orElseThrow();

@@ -12,6 +12,14 @@ import java.util.Set;
  * from the commands.yaml file.
  */
 public class CommandDataLoader {
+	private CommandDataLoader() {}
+
+	/**
+	 * Loads an array of {@link CommandConfig} from the given set of classpath
+	 * resources.
+	 * @param resources The list of resources to read from.
+	 * @return An array of slash command data objects.
+	 */
 	public static CommandConfig[] load(String... resources) {
 		Yaml yaml = new Yaml();
 		Set<CommandConfig> commands = new HashSet<>();

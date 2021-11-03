@@ -25,6 +25,11 @@ public class GuildConfig {
 
 	private ModerationConfig moderation;
 
+	/**
+	 * Constructs this config object.
+	 * @param guild The guild that this config is for.
+	 * @param file The path to the file that this config is stored in.
+	 */
 	public GuildConfig(Server guild, Path file) {
 		this.file = file;
 		this.moderation = new ModerationConfig();

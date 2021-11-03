@@ -10,10 +10,13 @@ import org.javacord.api.entity.user.User;
 import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 
+/**
+ * This command allows staff to purge many messages from a text channel.
+ */
 @Slf4j
 public class PurgeCommand implements SlashCommandHandler {
 	@Override
-	public InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws Exception {
+	public InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws ResponseException {
 		var until = interaction.getOptionStringValueByName("until")
 				.orElseThrow(ResponseException.warning("Missing required parameter."));
 		var userOption = interaction.getOptionUserValueByName("user");
@@ -23,10 +26,15 @@ public class PurgeCommand implements SlashCommandHandler {
 		return Responses.info(interaction, "Purge Started", "Messages will be deleted!");
 	}
 
+	/**
+	 * Purges messages from a channel.
+	 * @param until The message after which all should be removed.
+	 * @param user The user to remove messages for. This may be null.
+	 */
 	private void purge(Message until, User user) {
 		log.info("Purging all messages in {} until {}.", until.getServerTextChannel().orElseThrow().getName(), until.getId());
 		until.getMessagesAfterAsStream()
-				.filter(message -> (user == null || message.getAuthor().getId() == user.getId()))
+				.filter(message -> user == null || message.getAuthor().getId() == user.getId())
 				.forEach(message -> message.delete().join());
 		if (user == null || until.getAuthor().getId() == user.getId()) {
 			until.delete().join();
