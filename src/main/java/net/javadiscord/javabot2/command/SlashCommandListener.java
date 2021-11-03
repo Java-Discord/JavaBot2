@@ -21,8 +21,8 @@ import java.util.concurrent.CompletableFuture;
 public final class SlashCommandListener implements SlashCommandCreateListener {
 	private final Map<Long, SlashCommandHandler> commandHandlers = new HashMap<>();
 
-	public SlashCommandListener(DiscordApi api) {
-		registerSlashCommands(api, "commands/moderation.yaml")
+	public SlashCommandListener(DiscordApi api, String... resources) {
+		registerSlashCommands(api, resources)
 				.thenAcceptAsync(commandHandlers::putAll);
 	}
 

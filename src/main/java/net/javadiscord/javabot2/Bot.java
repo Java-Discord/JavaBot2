@@ -41,9 +41,12 @@ public class Bot {
 		initDataSources();
 		asyncPool = Executors.newScheduledThreadPool(config.getSystems().getAsyncPoolSize());
 		DiscordApi api = new DiscordApiBuilder().setToken(config.getSystems().getDiscordBotToken()).login().join();
-		config.loadGuilds(api.getServers());
-		config.flush();
-		SlashCommandListener commandListener = new SlashCommandListener(api);
+		config.loadGuilds(api.getServers()); // Once we've logged in, load all guild config files.
+		config.flush(); // Flush to save any new config files that are generated for new guilds.
+		SlashCommandListener commandListener = new SlashCommandListener(
+				api,
+				"commands/moderation.yaml"
+		);
 		api.addSlashCommandCreateListener(commandListener);
 	}
 
