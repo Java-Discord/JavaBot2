@@ -11,17 +11,37 @@ import java.util.function.Supplier;
  * advantage of throwing an exception up the call stack.
  */
 public class ResponseException extends Exception {
+	/**
+	 * The response builder that's used to respond to an interaction in the case
+	 * of an exception.
+	 */
 	@Getter
 	private final InteractionImmediateResponseBuilder responseBuilder;
 
+	/**
+	 * Constructs the exception.
+	 * @param responseBuilder The response builder to use.
+	 */
 	public ResponseException(InteractionImmediateResponseBuilder responseBuilder) {
 		this.responseBuilder = responseBuilder;
 	}
 
+	/**
+	 * Gets a supplier that supplies a response exception with a warning
+	 * response. This is especially useful with {@link java.util.Optional#orElseThrow(Supplier)}.
+	 * @param message The warning message.
+	 * @return The exception supplier.
+	 */
 	public static Supplier<ResponseException> warning(String message) {
 		return () -> new ResponseException(Responses.deferredWarningBuilder().message(message).build());
 	}
 
+	/**
+	 * Gets a supplier that supplies a response exception with an error
+	 * response. This is especially useful with {@link java.util.Optional#orElseThrow(Supplier)}.
+	 * @param message The error message.
+	 * @return The exception supplier.
+	 */
 	public static Supplier<ResponseException> error(String message) {
 		return () -> new ResponseException(Responses.deferredErrorBuilder().message(message).build());
 	}

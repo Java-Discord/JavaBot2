@@ -37,6 +37,13 @@ public class Bot {
 	 */
 	public static ScheduledExecutorService asyncPool;
 
+	// Hide constructor.
+	private Bot() {}
+
+	/**
+	 * Starts the bot.
+	 * @param args Command-line arguments.
+	 */
 	public static void main(String[] args) {
 		initDataSources();
 		asyncPool = Executors.newScheduledThreadPool(config.getSystems().getAsyncPoolSize());
@@ -56,7 +63,7 @@ public class Bot {
 	 * with the Discord API.
 	 */
 	private static void initDataSources() {
-		config = new BotConfig(Path.of("config"));
+		config = new BotConfig(Path.of("javabot_config"));
 		if (config.getSystems().getDiscordBotToken() == null || config.getSystems().getDiscordBotToken().isBlank()) {
 			throw new IllegalStateException("Missing required Discord bot token! Please edit config/systems.json to add it, then run again.");
 		}

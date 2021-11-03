@@ -14,6 +14,8 @@ import java.util.concurrent.CompletableFuture;
  * Provides methods for standardized replies to interaction events.
  */
 public class Responses {
+	private Responses() {}
+
 	public static InteractionImmediateResponseBuilder success(InteractionBase interaction, String title, String message) {
 		return reply(interaction, title, message, Color.GREEN, true);
 	}
@@ -112,35 +114,69 @@ public class Responses {
 			this(null, color);
 		}
 
+		/**
+		 * Sets the title of the response.
+		 * @param title The title to show.
+		 * @return The response builder.
+		 */
 		public ResponseBuilder title(String title) {
 			this.title = title;
 			return this;
 		}
 
+		/**
+		 * Sets the message of the response.
+		 * @param message The message to show.
+		 * @return The response builder.
+		 */
 		public ResponseBuilder message(String message) {
 			this.message = message;
 			return this;
 		}
 
+		/**
+		 * Makes this response publicly visible, i.e. not ephemeral.
+		 * @return The response builder.
+		 */
 		public ResponseBuilder makePublic() {
 			this.ephemeral = false;
 			return this;
 		}
 
+		/**
+		 * Builds a Javacord response builder.
+		 * @return A Javacord response builder.
+		 */
 		public InteractionImmediateResponseBuilder build() {
 			return reply(interaction, title, message, color, ephemeral);
 		}
 
+		/**
+		 * Builds a Javacord response builder using the given interaction.
+		 * @param interaction The interaction that will be responded to.
+		 * @return A Javacord response builder.
+		 */
 		public InteractionImmediateResponseBuilder build(InteractionBase interaction) {
 			this.interaction = interaction;
 			return build();
 		}
 
+		/**
+		 * Sends a Javacord response to the given interaction, using this
+		 * builder's settings.
+		 * @param interaction The interaction to send the response to.
+		 * @return A future that completes once the response is sent.
+		 */
 		public CompletableFuture<InteractionOriginalResponseUpdater> respond(InteractionBase interaction) {
 			this.interaction = interaction;
 			return build().respond();
 		}
 
+		/**
+		 * Sends a Javacord response as a reply to this builder's configured
+		 * interaction.
+		 * @return A future that completes once the response is sent.
+		 */
 		public CompletableFuture<InteractionOriginalResponseUpdater> respond() {
 			return this.build().respond();
 		}

@@ -20,6 +20,10 @@ public class CommandConfig {
 	private SubCommandGroupConfig[] subCommandGroups;
 	private String handler;
 
+	/**
+	 * Converts this config data into data that's ready for the Discord API.
+	 * @return The prepared data.
+	 */
 	public SlashCommandBuilder toData() {
 		var builder = new SlashCommandBuilder()
 				.setName(this.name)

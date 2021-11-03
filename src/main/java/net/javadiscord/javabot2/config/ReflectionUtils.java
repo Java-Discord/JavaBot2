@@ -11,8 +11,35 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Collection of utilities that help accomplish some reflection tricks.
+ */
 @Slf4j
 public class ReflectionUtils {
+	private static final Map<Class<?>, Function<String, Object>> propertyTypeParsers = new HashMap<>();
+	static {
+		propertyTypeParsers.put(Integer.class, Integer::parseInt);
+		propertyTypeParsers.put(int.class, Integer::parseInt);
+		propertyTypeParsers.put(Long.class, Long::parseLong);
+		propertyTypeParsers.put(long.class, Long::parseLong);
+		propertyTypeParsers.put(Float.class, Float::parseFloat);
+		propertyTypeParsers.put(float.class, Float::parseFloat);
+		propertyTypeParsers.put(Double.class, Double::parseDouble);
+		propertyTypeParsers.put(double.class, Double::parseDouble);
+		propertyTypeParsers.put(Boolean.class, Boolean::parseBoolean);
+		propertyTypeParsers.put(String.class, s -> s);
+	}
+
+	private ReflectionUtils() {}
+
+	/**
+	 * Finds a field and the object whose type contains it, for a given parent
+	 * object.
+	 * @param propertyName The name of the property.
+	 * @param parent The parent object whose fields to traverse.
+	 * @return An optional pairing of the field and object that contains it.
+	 * @throws UnknownPropertyException If the property cannot be found.
+	 */
 	public static Optional<Pair<Field, Object>> resolveField(String propertyName, Object parent) throws UnknownPropertyException {
 		return Optional.ofNullable(resolveField(propertyName.split("\\."), parent));
 	}
@@ -73,20 +100,6 @@ public class ReflectionUtils {
 			}
 		}
 		return fieldsMap;
-	}
-
-	private static final Map<Class<?>, Function<String, Object>> propertyTypeParsers = new HashMap<>();
-	static {
-		propertyTypeParsers.put(Integer.class, Integer::parseInt);
-		propertyTypeParsers.put(int.class, Integer::parseInt);
-		propertyTypeParsers.put(Long.class, Long::parseLong);
-		propertyTypeParsers.put(long.class, Long::parseLong);
-		propertyTypeParsers.put(Float.class, Float::parseFloat);
-		propertyTypeParsers.put(float.class, Float::parseFloat);
-		propertyTypeParsers.put(Double.class, Double::parseDouble);
-		propertyTypeParsers.put(double.class, Double::parseDouble);
-		propertyTypeParsers.put(Boolean.class, Boolean::parseBoolean);
-		propertyTypeParsers.put(String.class, s -> s);
 	}
 
 	/**

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'checkstyle'
 }
 
 group 'net.javadiscord'
@@ -16,7 +17,7 @@ dependencies {
     implementation 'org.javacord:javacord:3.3.2'
     
     implementation 'org.yaml:snakeyaml:1.29'
-    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.google.code.gson:gson:2.8.9'
 
     // Persistence Dependencies
     implementation 'org.mongodb:mongodb-driver:3.12.10'
@@ -45,4 +46,9 @@ jar {
 
 test {
     useJUnitPlatform()
+}
+
+checkstyle {
+    toolVersion '9.1'
+    configDirectory.set(new File("checkstyle"))
 }

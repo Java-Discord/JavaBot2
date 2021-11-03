@@ -15,6 +15,10 @@ public class SubCommandConfig {
 	private String description;
 	private OptionConfig[] options;
 
+	/**
+	 * Converts this config data into data that's ready for the Discord API.
+	 * @return The prepared data.
+	 */
 	public SlashCommandOptionBuilder toData() {
 		var builder = new SlashCommandOptionBuilder()
 				.setType(SlashCommandOptionType.SUB_COMMAND)

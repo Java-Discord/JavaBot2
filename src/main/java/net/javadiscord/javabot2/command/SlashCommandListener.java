@@ -20,6 +20,9 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 public final class SlashCommandListener implements SlashCommandCreateListener {
+	/**
+	 * The set of all slash command handlers, mapped by their ids.
+	 */
 	private final Map<Long, SlashCommandHandler> commandHandlers = new HashMap<>();
 
 	/**
@@ -42,11 +45,6 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 				handler.handle(event.getSlashCommandInteraction()).respond();
 			} catch (ResponseException e) {
 				e.getResponseBuilder().respond();
-			} catch (Exception e) {
-				log.error("An error occurred while handling a slash command.", e);
-				Responses.errorBuilder(event)
-						.message("An error occurred while executing the command.")
-						.respond();
 			}
 		} else {
 			Responses.warningBuilder(event)
@@ -85,7 +83,7 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 				try {
 					Class<?> handlerClass = Class.forName(commandConfig.getHandler());
 					handlers.put(commandConfig.getName(), (SlashCommandHandler) handlerClass.getConstructor().newInstance());
-				} catch (Exception e) {
+				} catch (ReflectiveOperationException e) {
 					log.error("An error occurred when trying to get new instance of a slash command handler class.", e);
 				}
 			} else {

@@ -8,5 +8,11 @@ import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
  * handler in any command configuration file.
  */
 public interface SlashCommandHandler {
-	InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws Exception;
+	/**
+	 * Handles a slash command interaction.
+	 * @param interaction The interaction.
+	 * @return An immediate response to the interaction.
+	 * @throws ResponseException If an error occurs while handling the event.
+	 */
+	InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws ResponseException;
 }
