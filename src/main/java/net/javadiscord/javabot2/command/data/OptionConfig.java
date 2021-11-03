@@ -1,7 +1,8 @@
-package net.javadiscord.javabot2.command;
+package net.javadiscord.javabot2.command.data;
 
 import lombok.Data;
 import org.javacord.api.interaction.SlashCommandOptionBuilder;
+import org.javacord.api.interaction.SlashCommandOptionChoiceBuilder;
 import org.javacord.api.interaction.SlashCommandOptionType;
 
 /**
@@ -16,12 +17,11 @@ public class OptionConfig {
 	private boolean required;
 
 	public SlashCommandOptionBuilder toData() {
-		var builder = new SlashCommandOptionBuilder()
+		return new SlashCommandOptionBuilder()
 				.setType(SlashCommandOptionType.valueOf(this.type.toUpperCase()))
 				.setName(this.name)
 				.setDescription(this.description)
 				.setRequired(this.required);
-		return builder;
 	}
 
 	@Override

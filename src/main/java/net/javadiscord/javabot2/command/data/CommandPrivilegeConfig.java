@@ -1,4 +1,4 @@
-package net.javadiscord.javabot2.command;
+package net.javadiscord.javabot2.command.data;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
