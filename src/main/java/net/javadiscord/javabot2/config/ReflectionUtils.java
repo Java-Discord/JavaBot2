@@ -17,6 +17,7 @@ import java.util.function.Function;
 @Slf4j
 public class ReflectionUtils {
 	private static final Map<Class<?>, Function<String, Object>> propertyTypeParsers = new HashMap<>();
+
 	static {
 		propertyTypeParsers.put(Integer.class, Integer::parseInt);
 		propertyTypeParsers.put(int.class, Integer::parseInt);
