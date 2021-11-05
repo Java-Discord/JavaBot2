@@ -16,24 +16,14 @@ import java.awt.*;
 import java.time.Instant;
 import java.util.Map;
 
+/**
+ * Command that warns a user, which is used by moderators to enforce rules.
+ */
 public class WarnCommand implements SlashCommandHandler {
+	/**
+	 * The maximum severity that a user can reach, after which they are banned.
+	 */
 	public static final int MAX_SEVERITY = 100;
-
-	private enum Severity {
-		LOW(10), MEDIUM(20), HIGH(40);
-
-		private final int weight;
-
-		Severity(int weight) {
-			this.weight = weight;
-		}
-
-		public int getWeight() {
-			return this.weight;
-		}
-	}
-
-	private static record WarnData(User user, long timestamp, Severity severity, String reason, User warnedBy, int totalSeverity, Server server){}
 
 	@Override
 	public InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws ResponseException {
@@ -96,4 +86,20 @@ public class WarnCommand implements SlashCommandHandler {
 				.message(String.format("User %s was banned after receiving too many warnings.", user.getDisplayName(server)))
 				.build();
 	}
+
+	private enum Severity {
+		LOW(10), MEDIUM(20), HIGH(40);
+
+		private final int weight;
+
+		Severity(int weight) {
+			this.weight = weight;
+		}
+
+		public int getWeight() {
+			return this.weight;
+		}
+	}
+
+	private static record WarnData(User user, long timestamp, Severity severity, String reason, User warnedBy, int totalSeverity, Server server){}
 }
