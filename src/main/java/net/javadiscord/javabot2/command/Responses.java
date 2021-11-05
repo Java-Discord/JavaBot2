@@ -134,6 +134,10 @@ public class Responses {
 			return this;
 		}
 
+		public String getMessage() {
+			return this.message;
+		}
+
 		/**
 		 * Makes this response publicly visible, i.e. not ephemeral.
 		 * @return The response builder.

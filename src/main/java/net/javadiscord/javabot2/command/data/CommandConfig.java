@@ -3,7 +3,6 @@ package net.javadiscord.javabot2.command.data;
 import lombok.Data;
 import org.javacord.api.interaction.SlashCommandBuilder;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -45,18 +44,6 @@ public class CommandConfig {
 			}
 		}
 		return builder;
-	}
-
-	@Override
-	public String toString() {
-		return "CommandConfig{" +
-			"name='" + name + '\'' +
-			", description='" + description + '\'' +
-			", options=" + Arrays.toString(options) +
-			", subCommands=" + Arrays.toString(subCommands) +
-			", subCommandGroups=" + Arrays.toString(subCommandGroups) +
-			", handler=" + handler +
-			'}';
 	}
 
 	@Override
