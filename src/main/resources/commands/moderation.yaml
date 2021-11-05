@@ -14,3 +14,31 @@
       description: The user whose messages to remove. If left blank, messages from any user are removed.
       type: USER
       required: false
+
+- name: warn
+  description: Sends a warning to a user, and increases their warn severity rating.
+  handler: net.javadiscord.javabot2.systems.moderation.WarnCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to warn.
+      type: USER
+      required: true
+    - name: severity
+      description: How severe was the offense?
+      type: STRING
+      required: true
+      choices:
+        - name: Low
+          value: "LOW"
+        - name: Medium
+          value: "MEDIUM"
+        - name: High
+          value: "HIGH"
+    - name: reason
+      description: The reason for this user's warning.
+      type: STRING
+      required: true

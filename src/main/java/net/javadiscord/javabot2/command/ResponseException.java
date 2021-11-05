@@ -1,7 +1,6 @@
 package net.javadiscord.javabot2.command;
 
 import lombok.Getter;
-import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 
 import java.util.function.Supplier;
 
@@ -16,13 +15,14 @@ public class ResponseException extends Exception {
 	 * of an exception.
 	 */
 	@Getter
-	private final InteractionImmediateResponseBuilder responseBuilder;
+	private final Responses.ResponseBuilder responseBuilder;
 
 	/**
 	 * Constructs the exception.
 	 * @param responseBuilder The response builder to use.
 	 */
-	public ResponseException(InteractionImmediateResponseBuilder responseBuilder) {
+	public ResponseException(Responses.ResponseBuilder responseBuilder) {
+		super(responseBuilder.getMessage());
 		this.responseBuilder = responseBuilder;
 	}
 
@@ -33,7 +33,7 @@ public class ResponseException extends Exception {
 	 * @return The exception supplier.
 	 */
 	public static Supplier<ResponseException> warning(String message) {
-		return () -> new ResponseException(Responses.deferredWarningBuilder().message(message).build());
+		return () -> new ResponseException(Responses.deferredWarningBuilder().message(message));
 	}
 
 	/**
@@ -43,6 +43,6 @@ public class ResponseException extends Exception {
 	 * @return The exception supplier.
 	 */
 	public static Supplier<ResponseException> error(String message) {
-		return () -> new ResponseException(Responses.deferredErrorBuilder().message(message).build());
+		return () -> new ResponseException(Responses.deferredErrorBuilder().message(message));
 	}
 }

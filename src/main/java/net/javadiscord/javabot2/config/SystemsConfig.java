@@ -18,7 +18,7 @@ public class SystemsConfig {
 	/**
 	 * The URL used to log in to the MongoDB instance which this bot uses.
 	 */
-	private String mongoDatabaseUrl = "mongodb://root:example@localhost:27171/javabot";
+	private String mongoDatabaseUrl = "mongodb://root:example@localhost:27171";
 
 	/**
 	 * The number of threads to allocate to the bot's general purpose async

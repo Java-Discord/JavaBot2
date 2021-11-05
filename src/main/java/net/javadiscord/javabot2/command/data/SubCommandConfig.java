@@ -4,8 +4,6 @@ import lombok.Data;
 import org.javacord.api.interaction.SlashCommandOptionBuilder;
 import org.javacord.api.interaction.SlashCommandOptionType;
 
-import java.util.Arrays;
-
 /**
  * Simple DTO for a Discord subcommand.
  */
@@ -30,14 +28,5 @@ public class SubCommandConfig {
 			}
 		}
 		return builder;
-	}
-
-	@Override
-	public String toString() {
-		return "SubCommandConfig{" +
-			"name='" + name + '\'' +
-			", description='" + description + '\'' +
-			", options=" + Arrays.toString(options) +
-			'}';
 	}
 }

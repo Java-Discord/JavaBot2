@@ -21,30 +21,39 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 public final class SlashCommandListener implements SlashCommandCreateListener {
 	/**
-	 * The set of all slash command handlers, mapped by their ids.
+	 * The set of all slash command handlers, mapped by their names.
 	 */
-	private final Map<Long, SlashCommandHandler> commandHandlers = new HashMap<>();
+	private final Map<String, SlashCommandHandler> commandHandlers;
 
 	/**
 	 * Constructs a new slash command listener using the given Discord api, and
 	 * loads commands from configuration YAML files according to the list of
 	 * resources.
 	 * @param api The Discord api to use.
+	 * @param sendUpdate Set to true if we should update the slash commands in
+	 *                   the API, or false if we should just assume it's done.
 	 * @param resources The list of classpath resources to load commands from.
 	 */
-	public SlashCommandListener(DiscordApi api, String... resources) {
-		registerSlashCommands(api, resources)
-				.thenAcceptAsync(commandHandlers::putAll);
+	public SlashCommandListener(DiscordApi api, boolean sendUpdate, String... resources) {
+		if (sendUpdate) {
+			this.commandHandlers = new HashMap<>();
+			registerSlashCommands(api, resources)
+					.thenAcceptAsync(commandHandlers::putAll)
+					.thenRun(() -> log.info("Registered all slash commands."));
+		} else {
+			this.commandHandlers = initializeHandlers(CommandDataLoader.load(resources));
+			log.info("Registered all slash commands.");
+		}
 	}
 
 	@Override
 	public void onSlashCommandCreate(SlashCommandCreateEvent event) {
-		var handler = commandHandlers.get(event.getSlashCommandInteraction().getCommandId());
+		var handler = commandHandlers.get(event.getSlashCommandInteraction().getCommandName());
 		if (handler != null) {
 			try {
 				handler.handle(event.getSlashCommandInteraction()).respond();
 			} catch (ResponseException e) {
-				e.getResponseBuilder().respond();
+				e.getResponseBuilder().respond(event.getSlashCommandInteraction());
 			}
 		} else {
 			Responses.warningBuilder(event)
@@ -54,7 +63,7 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 		}
 	}
 
-	private CompletableFuture<Map<Long, SlashCommandHandler>> registerSlashCommands(DiscordApi api, String... resources) {
+	private CompletableFuture<Map<String, SlashCommandHandler>> registerSlashCommands(DiscordApi api, String... resources) {
 		var commandConfigs = CommandDataLoader.load(resources);
 		var handlers = initializeHandlers(commandConfigs);
 		List<SlashCommandBuilder> commandBuilders = Arrays.stream(commandConfigs)
@@ -62,17 +71,13 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 		return deleteAllSlashCommands(api)
 				.thenComposeAsync(unused -> api.bulkOverwriteGlobalSlashCommands(commandBuilders))
 				.thenComposeAsync(slashCommands -> {
-					Map<Long, SlashCommandHandler> handlersById = new HashMap<>();
 					Map<String, Long> nameToId = new HashMap<>();
 					for (var slashCommand : slashCommands) {
-						var handler = handlers.get(slashCommand.getName());
-						handlersById.put(slashCommand.getId(), handler);
 						nameToId.put(slashCommand.getName(), slashCommand.getId());
 					}
-					log.info("Registered all slash commands.");
 					return updatePermissions(api, commandConfigs, nameToId)
 							.thenRun(() -> log.info("Updated permissions for all slash commands."))
-							.thenApplyAsync(unused -> handlersById);
+							.thenApplyAsync(unused -> handlers);
 				});
 	}
 
