@@ -16,6 +16,31 @@ public class ModerationConfig extends GuildConfigItem {
 	 */
 	private long staffRoleId;
 
+	/**
+	 * The amount of seconds to be looked into the past to determine if a user is spamming.
+	 */
+	private int pastMessageCountBeforeDurationInSeconds;
+
+	/**
+	 * The amount of messages to be sent within {@link #pastMessageCountBeforeDurationInSeconds}.
+	 */
+	private int messageSpamAmount;
+
+	/**
+	 * The amount of messages to be cached for each user.
+	 */
+	private int cachedMessagesPerUser;
+
+	/**
+	 * The frequency of cleaning up the cached messages. Amount in minutes.
+	 */
+	private int cachedMessageCleanupFrequency;
+
+	/**
+	 * The amount of minutes for removing this cached messages.
+	 */
+	private int amountOfMinutesForRemoval;
+
 	public Role getStaffRole() {
 		return this.getGuild().getRoleById(staffRoleId).orElseThrow();
 	}

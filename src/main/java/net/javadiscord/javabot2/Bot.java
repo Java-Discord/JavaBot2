@@ -9,11 +9,17 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.javadiscord.javabot2.command.SlashCommandListener;
 import net.javadiscord.javabot2.config.BotConfig;
+import net.javadiscord.javabot2.systems.moderation.SpamListener;
+import net.javadiscord.javabot2.systems.moderation.MessageCache;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
 
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -46,6 +52,11 @@ public class Bot {
 	 */
 	public static ScheduledExecutorService asyncPool;
 
+	/**
+	 * The message cache.
+	 */
+	public static ConcurrentHashMap<MessageAuthor, LinkedList<Message>> messageCache;
+
 	// Hide constructor.
 	private Bot() {}
 
@@ -60,14 +71,30 @@ public class Bot {
 				.setToken(config.getSystems().getDiscordBotToken())
 				.setAllIntentsExcept(Intent.GUILD_MESSAGE_TYPING, Intent.GUILD_PRESENCES, Intent.GUILD_VOICE_STATES)
 				.login().join();
+
+		initListeners(api);
+
 		config.loadGuilds(api.getServers()); // Once we've logged in, load all guild config files.
 		config.flush(); // Flush to save any new config files that are generated for new guilds.
+
 		SlashCommandListener commandListener = new SlashCommandListener(
 				api,
 				args.length > 0 && args[0].equalsIgnoreCase("--register-commands"),
 				"commands/moderation.yaml"
 		);
 		api.addSlashCommandCreateListener(commandListener);
+	}
+
+	/**
+	 * Initializes and adds all listeners to the API.
+	 * @param api the API
+	 */
+	private static void initListeners(DiscordApi api) {
+		MessageCache cache = new MessageCache();
+		messageCache = cache.getCache();
+
+		api.addMessageCreateListener(new SpamListener());
+		api.addMessageCreateListener(cache);
 	}
 
 	/**
