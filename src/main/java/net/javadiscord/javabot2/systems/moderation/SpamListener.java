@@ -18,10 +18,8 @@ public class SpamListener implements MessageCreateListener {
 			int amountOfMessages = (int) Bot.messageCache.get(event.getMessageAuthor())
 					.stream()
 					//TODO get time from config
-					.filter(m -> m.getCreationTimestamp().isAfter(Instant.now().minus(Duration.ofSeconds(-1))))
+					.filter(msg -> msg.getCreationTimestamp().isAfter(Instant.now().minus(Duration.ofSeconds(-1))))
 					.count();
-
-			System.out.println(amountOfMessages);
 
 			//TODO get amount from config
 			if (amountOfMessages >= -1) {
