@@ -14,8 +14,12 @@ import net.javadiscord.javabot2.systems.moderation.MessageCache;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageAuthor;
 
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -51,7 +55,7 @@ public class Bot {
 	/**
 	 * The message cache.
 	 */
-	public static MessageCache messageCache;
+	public static ConcurrentHashMap<MessageAuthor, LinkedList<Message>> messageCache;
 
 	// Hide constructor.
 	private Bot() {}
@@ -68,7 +72,6 @@ public class Bot {
 				.setAllIntentsExcept(Intent.GUILD_MESSAGE_TYPING, Intent.GUILD_PRESENCES, Intent.GUILD_VOICE_STATES)
 				.login().join();
 
-		messageCache = new MessageCache();
 		initListeners(api);
 
 		config.loadGuilds(api.getServers()); // Once we've logged in, load all guild config files.
@@ -87,8 +90,11 @@ public class Bot {
 	 * @param api the API
 	 */
 	private static void initListeners(DiscordApi api) {
+		MessageCache cache = new MessageCache();
+		messageCache = cache.getCache();
+
 		api.addMessageCreateListener(new SpamListener());
-		api.addMessageCreateListener(messageCache);
+		api.addMessageCreateListener(cache);
 	}
 
 	/**

@@ -15,15 +15,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * Caches incoming messages and cleans it out when needed.
  */
-public class MessageCache extends ConcurrentHashMap<MessageAuthor, LinkedList<Message>> implements MessageCreateListener {
+public class MessageCache implements MessageCreateListener {
 
 	private final ConcurrentHashMap<MessageAuthor, Instant> lastModifications;
+	private final ConcurrentHashMap<MessageAuthor, LinkedList<Message>> cache;
 
     /**
      * Creates the cache.
      */
 	public MessageCache() {
 		lastModifications = new ConcurrentHashMap<>();
+		cache = new ConcurrentHashMap<>();
         // TODO config
 		Bot.asyncPool.scheduleAtFixedRate(this::clean, -1, -1, TimeUnit.MINUTES);
 	}
@@ -43,7 +45,7 @@ public class MessageCache extends ConcurrentHashMap<MessageAuthor, LinkedList<Me
 			// if last modification is older than n minutes
             // TODO config
 			if (instant.isAfter(Instant.now().minus(Duration.ofMinutes(-1)))) {
-				this.remove(messageAuthor);
+				cache.remove(messageAuthor);
 				lastModifications.remove(messageAuthor);
 			}
 		});
@@ -55,8 +57,8 @@ public class MessageCache extends ConcurrentHashMap<MessageAuthor, LinkedList<Me
 	 * @param msg the message to be added
 	 */
 	private void add(Message msg) {
-		if (this.containsKey(msg.getAuthor())) {
-			LinkedList<Message> msgList = this.get(msg.getAuthor());
+		if (cache.containsKey(msg.getAuthor())) {
+			LinkedList<Message> msgList = cache.get(msg.getAuthor());
 			msgList.offer(msg);
 			lastModifications.replace(msg.getAuthor(), Instant.now());
 
@@ -68,9 +70,13 @@ public class MessageCache extends ConcurrentHashMap<MessageAuthor, LinkedList<Me
 		} else {
 			LinkedList<Message> messages = new LinkedList<>();
 			messages.add(msg);
-			this.put(msg.getAuthor(), messages);
+			cache.put(msg.getAuthor(), messages);
 			lastModifications.put(msg.getAuthor(), Instant.now());
 		}
+	}
+
+	public ConcurrentHashMap<MessageAuthor, LinkedList<Message>> getCache() {
+		return cache;
 	}
 }
 
