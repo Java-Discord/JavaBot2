@@ -134,6 +134,17 @@ public class Responses {
 			return this;
 		}
 
+		/**
+		 * Sets the message of the response to a formatted string.
+		 * @param message The message's format string.
+		 * @param args The arguments to the format string.
+		 * @return The response builder.
+		 */
+		public ResponseBuilder messageFormat(String message, Object... args) {
+			this.message = String.format(message, args);
+			return this;
+		}
+
 		public String getMessage() {
 			return this.message;
 		}

@@ -96,6 +96,7 @@ public class Bot {
 		var db = mongoClient.getDatabase("javabot");
 		var warnCollection = db.getCollection("warn");
 		warnCollection.createIndex(Indexes.ascending("userId"), new IndexOptions().unique(false));
+		warnCollection.createIndex(Indexes.descending("createdAt"), new IndexOptions().unique(false));
 		return db;
 	}
 }
