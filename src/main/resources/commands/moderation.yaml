@@ -42,3 +42,20 @@
       description: The reason for this user's warning.
       type: STRING
       required: true
+
+- name: ban
+  description: Ban a user.
+  handler: net.javadiscord.javabot2.systems.moderation.BanCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to ban.
+      type: USER
+      required: true
+    - name: reason
+      description: The reason for banning this user.
+      type: STRING
+      required: true

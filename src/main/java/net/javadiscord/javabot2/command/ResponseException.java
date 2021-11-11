@@ -45,4 +45,13 @@ public class ResponseException extends Exception {
 	public static Supplier<ResponseException> error(String message) {
 		return () -> new ResponseException(Responses.deferredErrorBuilder().message(message));
 	}
+
+	/**
+	 * Standard helper method to generate a supplier of a response exception
+	 * with a simple "invalid argument" warning message.
+	 * @return The exception supplier.
+	 */
+	public static Supplier<ResponseException> invalidArgument() {
+		return () -> new ResponseException(Responses.deferredWarningBuilder().message("Invalid argument."));
+	}
 }

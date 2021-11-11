@@ -4,7 +4,6 @@ package net.javadiscord.javabot2.systems.moderation;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
-import net.javadiscord.javabot2.Bot;
 import net.javadiscord.javabot2.config.guild.ModerationConfig;
 import net.javadiscord.javabot2.systems.moderation.model.WarnSeverity;
 import org.bson.Document;
@@ -17,6 +16,7 @@ import java.awt.*;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * This service provides methods for performing moderation actions, like banning
@@ -48,8 +48,9 @@ public class ModerationService {
 	 * @param reason The reason for this warning.
 	 * @param warnedBy The user who issued the warning.
 	 * @param channel The channel in which the warning was issued.
+	 * @return A future that completes when all warn operations are complete.
 	 */
-	public void warn(User user, WarnSeverity severity, String reason, User warnedBy, ServerTextChannel channel) {
+	public CompletableFuture<Void> warn(User user, WarnSeverity severity, String reason, User warnedBy, ServerTextChannel channel) {
 		var warns = db.getCollection("warn");
 		Instant now = Instant.now();
 		warns.insertOne(new Document(Map.of(
@@ -64,13 +65,12 @@ public class ModerationService {
 			totalSeverity += WarnSeverity.getWeightOrDefault(warnDoc.getString("severity"));
 		}
 		var warnEmbed = buildWarnEmbed(user, severity, reason, warnedBy, now, totalSeverity);
-		Bot.asyncPool.submit(() -> {
-			user.openPrivateChannel().thenAcceptAsync(privateChannel -> privateChannel.sendMessage(warnEmbed));
-			channel.sendMessage(warnEmbed);
-		});
+		var future = channel.sendMessage(warnEmbed)
+				.thenComposeAsync(unused -> user.openPrivateChannel().thenAcceptAsync(privateChannel -> privateChannel.sendMessage(warnEmbed)));
 		if (totalSeverity > config.getMaxWarnSeverity()) {
-			ban(user, "Too many warnings.", warnedBy, channel);
+			return future.thenComposeAsync(unused -> ban(user, "Too many warnings.", warnedBy, channel));
 		}
+		return future;
 	}
 
 	/**
@@ -79,15 +79,19 @@ public class ModerationService {
 	 * @param reason The reason for banning the user.
 	 * @param bannedBy The user who is responsible for banning this user.
 	 * @param channel The channel in which the ban was issued.
+	 * @return A future that completes once all ban operations are done.
 	 */
-	public void ban(User user, String reason, User bannedBy, ServerTextChannel channel) {
+	public CompletableFuture<Void> ban(User user, String reason, User bannedBy, ServerTextChannel channel) {
 		var banEmbed = buildBanEmbed(user, reason, bannedBy);
-		Bot.asyncPool.submit(() -> {
-			channel.sendMessage(banEmbed);
-			user.openPrivateChannel()
+		if (channel.getServer().canBanUser(bannedBy, user)) {
+			return channel.getServer().banUser(user, BAN_DELETE_DAYS, reason)
+					.thenComposeAsync(unused -> user.openPrivateChannel())
 					.thenComposeAsync(privateChannel -> privateChannel.sendMessage(banEmbed))
-					.thenRunAsync(() -> channel.getServer().banUser(user, BAN_DELETE_DAYS, reason));
-		});
+					.thenComposeAsync(unused -> channel.sendMessage(banEmbed))
+					.thenApply(msg -> null);
+		} else {
+			return CompletableFuture.failedFuture(new PermissionException("You don't have permission to ban this user."));
+		}
 	}
 
 	private FindIterable<Document> findActiveWarns(User user) {
