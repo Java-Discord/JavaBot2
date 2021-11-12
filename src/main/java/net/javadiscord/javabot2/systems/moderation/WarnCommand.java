@@ -16,6 +16,7 @@ public class WarnCommand implements SlashCommandHandler {
 	public InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws ResponseException {
 		var user = interaction.getOptionUserValueByName("user")
 				.orElseThrow(ResponseException.warning("Missing required user."));
+		if (user.isBot()) return Responses.warning(interaction, "Cannot warn bots.");
 		var severityString = interaction.getOptionStringValueByName("severity")
 				.orElseThrow(ResponseException.warning("Missing required severity."));
 		var severity = WarnSeverity.valueOf(severityString.trim().toUpperCase());
@@ -24,8 +25,10 @@ public class WarnCommand implements SlashCommandHandler {
 		var channel = interaction.getChannel()
 				.orElseThrow(ResponseException.warning("Missing required channel."))
 				.asServerTextChannel().orElseThrow(ResponseException.warning("This command can only be used in server text channels."));
-		var moderationService = new ModerationService(interaction.getApi(), Bot.mongoDb, Bot.config.get(channel.getServer()).getModeration());
-		moderationService.warn(user, severity, reason, interaction.getUser(), channel);
+		var quiet = interaction.getOptionBooleanValueByName("quiet").orElse(false);
+		if (user.isBot()) return Responses.warning(interaction, "Cannot warn a bot.");
+		var moderationService = new ModerationService(interaction.getApi(), Bot.config.get(channel.getServer()).getModeration());
+		moderationService.warn(user, severity, reason, interaction.getUser(), channel, quiet);
 		return Responses.successBuilder(interaction)
 				.title("User Warned")
 				.messageFormat("User %s has been warned.", user.getMentionTag())

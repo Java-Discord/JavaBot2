@@ -5,21 +5,28 @@ import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.extern.slf4j.Slf4j;
 import net.javadiscord.javabot2.command.SlashCommandListener;
 import net.javadiscord.javabot2.config.BotConfig;
+import net.javadiscord.javabot2.db.DbHelper;
+import net.javadiscord.javabot2.systems.moderation.ModerationService;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 
 import java.nio.file.Path;
+import java.sql.SQLException;
+import java.time.ZoneOffset;
+import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The main program entry point.
  */
+@Slf4j
 public class Bot {
 	/**
 	 * A connection pool that can be used to obtain new JDBC connections.
@@ -54,6 +61,7 @@ public class Bot {
 	 * @param args Command-line arguments.
 	 */
 	public static void main(String[] args) {
+		TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
 		initDataSources();
 		asyncPool = Executors.newScheduledThreadPool(config.getSystems().getAsyncPoolSize());
 		DiscordApi api = new DiscordApiBuilder()
@@ -68,6 +76,7 @@ public class Bot {
 				"commands/moderation.yaml"
 		);
 		api.addSlashCommandCreateListener(commandListener);
+		initScheduledTasks(api);
 	}
 
 	/**
@@ -80,14 +89,13 @@ public class Bot {
 		if (config.getSystems().getDiscordBotToken() == null || config.getSystems().getDiscordBotToken().isBlank()) {
 			throw new IllegalStateException("Missing required Discord bot token! Please edit config/systems.json to add it, then run again.");
 		}
-		var hikariConfig = new HikariConfig();
-		var hikariConfigSource = config.getSystems().getHikariConfig();
-		hikariConfig.setJdbcUrl(hikariConfigSource.getJdbcUrl());
-		hikariConfig.setUsername(hikariConfigSource.getUsername());
-		hikariConfig.setPassword(hikariConfigSource.getPassword());
-		hikariConfig.setMaximumPoolSize(hikariConfigSource.getMaximumPoolSize());
-		hikariConfig.setConnectionInitSql(hikariConfigSource.getConnectionInitSql());
-		hikariDataSource = new HikariDataSource(hikariConfig);
+
+		try {
+			hikariDataSource = DbHelper.initDataSource(config);
+		} catch (SQLException e) {
+			log.error("Could not initialize Hikari data source.");
+			throw new IllegalStateException(e);
+		}
 		mongoDb = initMongoDatabase();
 	}
 
@@ -98,5 +106,14 @@ public class Bot {
 		warnCollection.createIndex(Indexes.ascending("userId"), new IndexOptions().unique(false));
 		warnCollection.createIndex(Indexes.descending("createdAt"), new IndexOptions().unique(false));
 		return db;
+	}
+
+	private static void initScheduledTasks(DiscordApi api) {
+		asyncPool.scheduleAtFixedRate(() -> {
+			for (var server : api.getServers()) {
+				new ModerationService(api, config.get(server).getModeration());
+				// TODO: Figure out how to periodically unmute people. Consider tracking each muted person.
+			}
+		}, 3L, 3L, TimeUnit.MINUTES);
 	}
 }

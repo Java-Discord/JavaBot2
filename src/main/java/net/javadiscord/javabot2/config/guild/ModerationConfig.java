@@ -3,6 +3,7 @@ package net.javadiscord.javabot2.config.guild;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import net.javadiscord.javabot2.config.GuildConfigItem;
+import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.permission.Role;
 
 /**
@@ -29,7 +30,25 @@ public class ModerationConfig extends GuildConfigItem {
 	 */
 	private int maxWarnSeverity;
 
+	/**
+	 * The id of the server's mute role.
+	 */
+	private long muteRoleId;
+
+	/**
+	 * The id of the channel where log messages are sent.
+	 */
+	private long logChannelId;
+
 	public Role getStaffRole() {
 		return this.getGuild().getRoleById(staffRoleId).orElseThrow();
+	}
+
+	public Role getMuteRole() {
+		return this.getGuild().getRoleById(muteRoleId).orElseThrow();
+	}
+
+	public ServerTextChannel getLogChannel() {
+		return this.getGuild().getChannelById(logChannelId).orElseThrow().asServerTextChannel().orElseThrow();
 	}
 }

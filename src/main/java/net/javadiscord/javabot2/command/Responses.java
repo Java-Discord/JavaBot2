@@ -4,6 +4,7 @@ import org.javacord.api.entity.message.MessageFlag;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.event.interaction.SlashCommandCreateEvent;
 import org.javacord.api.interaction.InteractionBase;
+import org.javacord.api.interaction.callback.InteractionCallbackDataFlag;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 import org.javacord.api.interaction.callback.InteractionOriginalResponseUpdater;
 
@@ -90,7 +91,7 @@ public class Responses {
 					.setTimestampToNow()
 					.setDescription(message));
 		if (ephemeral) {
-			responder.setFlags(MessageFlag.EPHEMERAL);
+			responder.setFlags(InteractionCallbackDataFlag.EPHEMERAL);
 		}
 		return responder;
 	}

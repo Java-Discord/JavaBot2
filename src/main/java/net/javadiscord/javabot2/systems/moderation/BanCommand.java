@@ -22,8 +22,9 @@ public class BanCommand implements SlashCommandHandler {
 				.orElseThrow(ResponseException.warning("This command can only be performed in a channel."))
 				.asServerTextChannel()
 				.orElseThrow(ResponseException.warning("This command can only be performed in a server text channel."));
-		var moderationService = new ModerationService(interaction.getApi(), Bot.mongoDb, Bot.config.get(channel.getServer()).getModeration());
-		moderationService.ban(user, reason, interaction.getUser(), channel);
+		var quiet = interaction.getOptionBooleanValueByName("quiet").orElse(false);
+		var moderationService = new ModerationService(interaction.getApi(), Bot.config.get(channel.getServer()).getModeration());
+		moderationService.ban(user, reason, interaction.getUser(), channel, quiet);
 		return Responses.successBuilder(interaction)
 				.title("User Banned")
 				.messageFormat("User %s has been banned.", user.getMentionTag())

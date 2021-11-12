@@ -2,3 +2,5 @@
 .gradle/
 build/
 /javabot_config/
+/javabot.mv.db
+/javabot.trace.db
