@@ -9,5 +9,5 @@ import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
  * button interactions.
  */
 public interface ButtonHandler {
-    InteractionImmediateResponseBuilder handleButtonInteraction(ButtonInteraction interaction) throws ResponseException;
+	InteractionImmediateResponseBuilder handleButtonInteraction(ButtonInteraction interaction) throws ResponseException;
 }

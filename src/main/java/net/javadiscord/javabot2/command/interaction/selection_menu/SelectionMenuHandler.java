@@ -9,5 +9,5 @@ import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder
  * select menu interactions.
  */
 public interface SelectionMenuHandler {
-    InteractionImmediateResponseBuilder handleSelectMenuInteraction(SelectMenuInteraction interaction) throws ResponseException;
+	InteractionImmediateResponseBuilder handleSelectMenuInteraction(SelectMenuInteraction interaction) throws ResponseException;
 }

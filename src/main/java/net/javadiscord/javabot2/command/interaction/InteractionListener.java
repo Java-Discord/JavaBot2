@@ -15,43 +15,43 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class InteractionListener implements ButtonClickListener, SelectMenuChooseListener {
 
-    @Override
-    public void onButtonClick(ButtonClickEvent event) {
-        var id = event.getButtonInteraction().getCustomId().split(":");
-        ButtonHandler handler = (ButtonHandler) getHandlerByName(id[0]);
-        try {
-            handler.handleButtonInteraction(event.getButtonInteraction()).respond();
-        } catch (ResponseException e) {
-            e.printStackTrace();
-        }
-    }
+	@Override
+	public void onButtonClick(ButtonClickEvent event) {
+		var id = event.getButtonInteraction().getCustomId().split(":");
+		ButtonHandler handler = (ButtonHandler) getHandlerByName(id[0]);
+		try {
+			handler.handleButtonInteraction(event.getButtonInteraction()).respond();
+		} catch (ResponseException e) {
+			e.printStackTrace();
+		}
+	}
 
-    @Override
-    public void onSelectMenuChoose(SelectMenuChooseEvent event) {
-        var id = event.getSelectMenuInteraction().getCustomId().split(":");
-        SelectionMenuHandler handler = (SelectionMenuHandler) getHandlerByName(id[0]);
-        try {
-            handler.handleSelectMenuInteraction(event.getSelectMenuInteraction()).respond();
-        } catch (ResponseException e) {
-            e.printStackTrace();
-        }
-    }
+	@Override
+	public void onSelectMenuChoose(SelectMenuChooseEvent event) {
+		var id = event.getSelectMenuInteraction().getCustomId().split(":");
+		SelectionMenuHandler handler = (SelectionMenuHandler) getHandlerByName(id[0]);
+		try {
+			handler.handleSelectMenuInteraction(event.getSelectMenuInteraction()).respond();
+		} catch (ResponseException e) {
+			e.printStackTrace();
+		}
+	}
 
-    /**
-     * Tries to get a Class by the specified name
-     * (Class paths are baked into the button id) and returns it.
-     * @param name the class name
-     * @return The handler class
-     */
-    private Object getHandlerByName(String name) {
-        try {
-            return Class.forName(name)
-                    .getDeclaredConstructor()
-                    .newInstance();
-        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException |
-                IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+	/**
+	 * Tries to get a Class by the specified name
+	 * (Class paths are baked into the button id) and returns it.
+	 * @param name the class name
+	 * @return The handler class
+	 */
+	private Object getHandlerByName(String name) {
+		try {
+			return Class.forName(name)
+					.getDeclaredConstructor()
+					.newInstance();
+		} catch (ClassNotFoundException | NoSuchMethodException | InstantiationException |
+				IllegalAccessException | InvocationTargetException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }
