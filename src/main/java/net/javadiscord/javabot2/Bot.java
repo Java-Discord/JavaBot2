@@ -86,6 +86,11 @@ public class Bot {
 		initScheduledTasks(api);
 	}
 
+	/**
+	 * Adds all the bot's event listeners to the JDA instance, except for the
+	 * main {@link SlashCommandListener}.
+	 * @param api the {@link DiscordApi} instance to add listeners to.
+	 */
 	private static void addEventListeners(DiscordApi api) {
 		api.addButtonClickListener(new InteractionListener());
 		api.addSelectMenuChooseListener(new InteractionListener());
