@@ -38,10 +38,7 @@ public class SystemsConfig {
 	@Data
 	public static class HikariConfig {
 		private static final int DEFAULT_POOL_SIZE = 5;
-		private String jdbcUrl = "jdbc:postgresql://localhost:27172/javabot";
-		private String username = "javabot_dev";
-		private String password = "javabot_dev_pass";
+		private String jdbcUrl = "jdbc:h2:tcp://localhost:9123/./javabot";
 		private int maximumPoolSize = DEFAULT_POOL_SIZE;
-		private String connectionInitSql = "SET TIME ZONE 'UTC'";
 	}
 }

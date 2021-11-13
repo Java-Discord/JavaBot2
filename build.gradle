@@ -11,17 +11,20 @@ targetCompatibility = 16
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
 }
 
 dependencies {
-    implementation 'org.javacord:javacord:3.3.2'
+    implementation 'org.javacord:javacord:3.4.0-SNAPSHOT'
     
     implementation 'org.yaml:snakeyaml:1.29'
     implementation 'com.google.code.gson:gson:2.8.9'
 
     // Persistence Dependencies
     implementation 'org.mongodb:mongodb-driver:3.12.10'
-    implementation 'org.postgresql:postgresql:42.3.0'
+    implementation 'com.h2database:h2:1.4.200'
     implementation 'com.zaxxer:HikariCP:5.0.0'
 
     // Lombok annotations

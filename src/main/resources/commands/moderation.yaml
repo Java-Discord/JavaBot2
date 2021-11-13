@@ -42,3 +42,78 @@
       description: The reason for this user's warning.
       type: STRING
       required: true
+    - name: quiet
+      description: If true, don't send a message in the server channel where the warn is issued.
+      type: BOOLEAN
+      required: false
+
+- name: clear-warns
+  description: Clears all warns from the given user.
+  handler: net.javadiscord.javabot2.systems.moderation.ClearWarnsCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to clear warns from.
+      type: USER
+      required: true
+
+- name: ban
+  description: Ban a user.
+  handler: net.javadiscord.javabot2.systems.moderation.BanCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to ban.
+      type: USER
+      required: true
+    - name: reason
+      description: The reason for banning this user.
+      type: STRING
+      required: true
+    - name: quiet
+      description: If true, don't send a message in the server channel where the ban is issued.
+      type: BOOLEAN
+      required: false
+
+- name: mute
+  description: Mutes a user.
+  handler: net.javadiscord.javabot2.systems.moderation.MuteCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to mute.
+      type: USER
+      required: true
+    - name: reason
+      description: The reason to mute the user.
+      type: STRING
+      required: true
+    - name: duration
+      description: How long to mute the user for. Defaults to 30 minutes.
+      type: STRING
+      required: false
+    - name: quiet
+      description: If true, don't send a message in the server channel where the mute is issued.
+      type: BOOLEAN
+      required: false
+
+- name: unmute
+  description: Immediately unmute a muted user.
+  handler: net.javadiscord.javabot2.systems.moderation.UnmuteCommand
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to unmute.
+      type: USER
+      required: true
