@@ -109,11 +109,11 @@ public class Bot {
 	}
 
 	private static void initScheduledTasks(DiscordApi api) {
+		// Regularly check for and unmute users whose mutes have expired.
 		asyncPool.scheduleAtFixedRate(() -> {
 			for (var server : api.getServers()) {
-				new ModerationService(api, config.get(server).getModeration());
-				// TODO: Figure out how to periodically unmute people. Consider tracking each muted person.
+				new ModerationService(api, config.get(server).getModeration()).unmuteExpired();
 			}
-		}, 3L, 3L, TimeUnit.MINUTES);
+		}, 1L, 1L, TimeUnit.MINUTES);
 	}
 }

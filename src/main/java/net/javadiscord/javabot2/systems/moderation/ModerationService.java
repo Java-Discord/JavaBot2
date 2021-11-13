@@ -1,6 +1,7 @@
 package net.javadiscord.javabot2.systems.moderation;
 
 
+import lombok.extern.slf4j.Slf4j;
 import net.javadiscord.javabot2.config.guild.ModerationConfig;
 import net.javadiscord.javabot2.db.DbHelper;
 import net.javadiscord.javabot2.systems.moderation.dao.MuteRepository;
@@ -12,6 +13,7 @@ import net.javadiscord.javabot2.util.TimeUtils;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
+import org.javacord.api.entity.server.ServerUpdater;
 import org.javacord.api.entity.user.User;
 
 import java.awt.*;
@@ -25,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
  * This service provides methods for performing moderation actions, like banning
  * or warning users.
  */
+@Slf4j
 public class ModerationService {
 	private static final int BAN_DELETE_DAYS = 7;
 
@@ -60,7 +63,7 @@ public class ModerationService {
 			var warnEmbed = buildWarnEmbed(user, severity, reason, warnedBy, warn.getCreatedAt().toInstant(ZoneOffset.UTC), totalWeight);
 			user.openPrivateChannel().thenAcceptAsync(pc -> pc.sendMessage(warnEmbed));
 			config.getLogChannel().sendMessage(warnEmbed);
-			if (!quiet) {
+			if (!quiet && channel.getId() != config.getLogChannelId()) {
 				channel.sendMessage(warnEmbed);
 			}
 			if (totalWeight > config.getMaxWarnSeverity()) {
@@ -144,7 +147,7 @@ public class ModerationService {
 			con.commit();
 			user.openPrivateChannel().thenAcceptAsync(pc -> pc.sendMessage(embed));
 			config.getLogChannel().sendMessage(embed);
-			if (!quiet) {
+			if (!quiet && channel.getId() != config.getLogChannelId()) {
 				channel.sendMessage(embed);
 			}
 		});
@@ -164,6 +167,34 @@ public class ModerationService {
 			var embed = buildUnmuteEmbed(user, unmutedBy);
 			config.getLogChannel().sendMessage(embed);
 			user.openPrivateChannel().thenAcceptAsync(pc -> pc.sendMessage(embed));
+		});
+	}
+
+	/**
+	 * Unmutes all users whose mutes have expired, and discards those mutes.
+	 * @return A future that completes when all expired mutes have been processed.
+	 */
+	public CompletableFuture<Void> unmuteExpired() {
+		return DbHelper.doDbAction(con -> {
+			con.setAutoCommit(false);
+			var repo = new MuteRepository(con);
+			ServerUpdater updater = new ServerUpdater(config.getGuild());
+			for (var mute : repo.getExpiredMutes()) {
+				// Check that for this expired mute, that there are no other active mutes which still apply to the user.
+				if (!repo.hasActiveMutes(mute.getUserId())) {
+					var user = api.getUserById(mute.getUserId()).join();
+					if (user.getRoles(config.getGuild()).contains(config.getMuteRole())) {
+						log.info("Unmuting user {} because their mute has expired.", user.getDiscriminatedName());
+						updater.removeRoleFromUser(user, config.getMuteRole());
+						var embed = buildUnmuteEmbed(user, api.getYourself());
+						user.openPrivateChannel().thenAcceptAsync(pc -> pc.sendMessage(embed));
+						config.getLogChannel().sendMessage(embed);
+					}
+					repo.discard(mute);
+				}
+			}
+			updater.update();
+			con.commit();
 		});
 	}
 
@@ -197,13 +228,10 @@ public class ModerationService {
 	}
 
 	private EmbedBuilder buildUnmuteEmbed(User user, User unmutedBy) {
-		var e = new EmbedBuilder()
+		return new EmbedBuilder()
 				.setColor(Color.DARK_GRAY)
 				.setTitle(String.format("%s | Unmute", user.getDiscriminatedName()))
-				.setTimestampToNow();
-		if (unmutedBy != null) {
-			e.setFooter(unmutedBy.getDiscriminatedName(), unmutedBy.getAvatar());
-		}
-		return e;
+				.setTimestampToNow()
+				.setFooter(unmutedBy.getDiscriminatedName(), unmutedBy.getAvatar());
 	}
 }
