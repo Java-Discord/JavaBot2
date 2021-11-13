@@ -1,7 +1,8 @@
 package net.javadiscord.javabot2.command.interaction.button;
 
-import org.javacord.api.entity.message.component.ActionRow;
+import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.entity.message.component.Button;
+import org.javacord.api.entity.message.component.ButtonBuilder;
 import org.javacord.api.entity.message.component.ButtonStyle;
 
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ public class ButtonAction {
     private final ButtonStyle buttonStyle;
     private Class<? extends ButtonHandler> handler;
     private final List<String> params;
+    private boolean disabled = false;
+    private String url;
+    private Emoji emoji;
 
     public ButtonAction(String label, ButtonStyle buttonStyle) {
         this.params = new ArrayList<>();
@@ -28,6 +32,21 @@ public class ButtonAction {
 
     public ButtonAction addParam(Object param) {
         params.add(String.valueOf(param));
+        return this;
+    }
+
+    public ButtonAction setDisabled(boolean disabled) {
+        this.disabled = disabled;
+        return this;
+    }
+
+    public ButtonAction setUrl(String url) {
+        this.url = url;
+        return this;
+    }
+
+    public ButtonAction setEmoji(Emoji emoji) {
+        this.emoji = emoji;
         return this;
     }
 
@@ -47,5 +66,15 @@ public class ButtonAction {
 
     public List<String> getParams() { return params; }
 
-    public Button getButton() { return Button.create(getCustomId(), buttonStyle, label); }
+    public Button getButton() {
+        var builder = new ButtonBuilder()
+                .setLabel(label)
+                .setStyle(buttonStyle)
+                .setDisabled(disabled);
+        if (buttonStyle != ButtonStyle.LINK) builder.setCustomId(getCustomId());
+        if (url != null && !url.isBlank() && !url.isEmpty() && buttonStyle == ButtonStyle.LINK) builder.setUrl(url);
+        if (emoji != null) builder.setEmoji(emoji);
+
+        return builder.build();
+    }
 }

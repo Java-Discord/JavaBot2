@@ -2,6 +2,7 @@ package net.javadiscord.javabot2.command.interaction.selection_menu;
 
 import org.javacord.api.entity.message.component.ActionRow;
 import org.javacord.api.entity.message.component.SelectMenu;
+import org.javacord.api.entity.message.component.SelectMenuBuilder;
 import org.javacord.api.entity.message.component.SelectMenuOption;
 
 import java.util.ArrayList;
@@ -67,13 +68,13 @@ public class SelectMenuAction {
     public SelectMenu getSelectMenu() {
         if (options.isEmpty()) throw new IllegalStateException("SelectMenu options may not be empty!");
         if (minValue > maxValue) throw new IllegalArgumentException("minValue may not be greater than maxValue!");
-        return SelectMenu.create(
-                getCustomId(),
-                placeholder,
-                minValue,
-                Math.min(maxValue, options.size()), // maxValue cannot be greater than the provided amount of options
-                options,
-                disabled
-        );
+        return new SelectMenuBuilder()
+                .setCustomId(getCustomId())
+                .setPlaceholder(placeholder)
+                .setMinimumValues(minValue)
+                .setMaximumValues(Math.min(maxValue, options.size())) // maxValue cannot be greater than the provided amount of options
+                .addOptions(options)
+                .setDisabled(disabled)
+                .build();
     }
 }
