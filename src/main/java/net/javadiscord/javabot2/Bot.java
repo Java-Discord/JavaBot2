@@ -87,7 +87,7 @@ public class Bot {
 	}
 
 	/**
-	 * Adds all the bot's event listeners to the JDA instance, except for the
+	 * Adds all the bot's event listeners to the Javacord instance, except for the
 	 * main {@link SlashCommandListener}.
 	 * @param api the {@link DiscordApi} instance to add listeners to.
 	 */
