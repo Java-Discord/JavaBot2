@@ -5,6 +5,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity representing an issued warning for a user.
+ */
 @Data
 @NoArgsConstructor
 public class Warn {
@@ -17,6 +20,13 @@ public class Warn {
 	private String reason;
 	private boolean discarded;
 
+	/**
+	 * Constructs a new warning.
+	 * @param userId The id of the user being warned.
+	 * @param warnedBy The id of the user who's warning them.
+	 * @param severity The severity of the warning.
+	 * @param reason The reason for the warning.
+	 */
 	public Warn(long userId, long warnedBy, WarnSeverity severity, String reason) {
 		this.userId = userId;
 		this.warnedBy = warnedBy;

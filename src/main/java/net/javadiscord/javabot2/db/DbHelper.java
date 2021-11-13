@@ -21,24 +21,33 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class DbHelper {
+	private DbHelper() {}
+
 	/**
 	 * Initializes the data source that'll be used throughout the bot to access
 	 * the database.
 	 * @param config The bot's configuration.
 	 * @return The data source.
-	 * @throws SQLException If an error occurs.
+	 * @throws IllegalStateException If an error occurs and we're unable to
+	 * start the database.
 	 */
-	public static HikariDataSource initDataSource(BotConfig config) throws SQLException {
+	public static HikariDataSource initDataSource(BotConfig config) {
 		// Determine if we need to initialize the schema, before starting up the server.
 		boolean shouldInitSchema = shouldInitSchema(config.getSystems().getHikariConfig().getJdbcUrl());
 
 		// Now that we have remembered whether we need to initialize the schema, start up the server.
-		var server = Server.createTcpServer("-tcpPort", "9123", "-ifNotExists").start();
+		Server server;
+		try {
+			server = Server.createTcpServer("-tcpPort", "9123", "-ifNotExists").start();
+		} catch (SQLException e) {
+			throw new IllegalStateException("Cannot start database server.", e);
+		}
 		var hikariConfig = new HikariConfig();
 		var hikariConfigSource = config.getSystems().getHikariConfig();
 		hikariConfig.setJdbcUrl(hikariConfigSource.getJdbcUrl());
 		hikariConfig.setMaximumPoolSize(hikariConfigSource.getMaximumPoolSize());
 		var ds = new HikariDataSource(hikariConfig);
+		// Add a shutdown hook to close down the datasource and server when the JVM terminates.
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			ds.close();
 			server.stop();
@@ -46,9 +55,9 @@ public class DbHelper {
 		if (shouldInitSchema) {
 			try {
 				initializeSchema(ds);
-			} catch (IOException e) {
+			} catch (IOException | SQLException e) {
 				e.printStackTrace();
-				throw new IllegalStateException(e);
+				throw new IllegalStateException("Cannot initialize database schema.", e);
 			}
 		}
 		return ds;

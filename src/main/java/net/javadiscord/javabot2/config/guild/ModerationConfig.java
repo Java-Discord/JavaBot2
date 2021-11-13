@@ -22,13 +22,13 @@ public class ModerationConfig extends GuildConfigItem {
 	 * being removed from the server. Warnings older than this are still kept,
 	 * but ignored.
 	 */
-	private int warnTimeoutDays;
+	private int warnTimeoutDays = 30;
 
 	/**
 	 * The maximum total severity that a user can accrue from warnings before
 	 * being removed from the server.
 	 */
-	private int maxWarnSeverity;
+	private int maxWarnSeverity = 100;
 
 	/**
 	 * The id of the server's mute role.

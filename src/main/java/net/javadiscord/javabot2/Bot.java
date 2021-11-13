@@ -16,7 +16,6 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
 
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
 import java.util.concurrent.Executors;
@@ -35,12 +34,18 @@ public class Bot {
 
 	/**
 	 * A thread-safe MongoDB client that can be used to interact with MongoDB.
+	 * @deprecated Use the relational data source for all future persistence
+	 * needs; it promotes more organized code that's less prone to failures.
 	 */
+	@Deprecated
 	public static MongoClient mongoClient;
 
 	/**
 	 * The single Mongo database where all bot data is stored.
+	 * @deprecated Use the relational data source for all future persistence
+	 * needs; it promotes more organized code that's less prone to failures.
 	 */
+	@Deprecated
 	public static MongoDatabase mongoDb;
 
 	/**
@@ -89,13 +94,7 @@ public class Bot {
 		if (config.getSystems().getDiscordBotToken() == null || config.getSystems().getDiscordBotToken().isBlank()) {
 			throw new IllegalStateException("Missing required Discord bot token! Please edit config/systems.json to add it, then run again.");
 		}
-
-		try {
-			hikariDataSource = DbHelper.initDataSource(config);
-		} catch (SQLException e) {
-			log.error("Could not initialize Hikari data source.");
-			throw new IllegalStateException(e);
-		}
+		hikariDataSource = DbHelper.initDataSource(config);
 		mongoDb = initMongoDatabase();
 	}
 

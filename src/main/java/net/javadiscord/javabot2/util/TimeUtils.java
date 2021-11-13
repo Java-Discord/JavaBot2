@@ -14,6 +14,7 @@ public class TimeUtils {
 	 * The standard formatter for date time objects.
 	 */
 	public static final DateTimeFormatter STANDARD_FORMATTER;
+
 	static {
 		STANDARD_FORMATTER = DateTimeFormatter.ofPattern("EEE',' dd/MM/yyyy',' HH:mm", Locale.ENGLISH);
 	}

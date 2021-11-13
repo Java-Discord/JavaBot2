@@ -7,10 +7,19 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+ * DAO for interacting with the set of {@link Warn} objects.
+ */
 @RequiredArgsConstructor
 public class WarnRepository {
 	private final Connection con;
 
+	/**
+	 * Inserts a new warn into the database.
+	 * @param warn The warn to save.
+	 * @return The warn that was saved.
+	 * @throws SQLException If an error occurs.
+	 */
 	public Warn insert(Warn warn) throws SQLException {
 		try (var s = con.prepareStatement(
 				"INSERT INTO warn (user_id, warned_by, severity, severity_weight, reason) VALUES (?, ?, ?, ?, ?)",
@@ -29,6 +38,12 @@ public class WarnRepository {
 		}
 	}
 
+	/**
+	 * Finds a warn by its id.
+	 * @param id The id of the warn.
+	 * @return The warn, if it was found.
+	 * @throws SQLException If an error occurs.
+	 */
 	public Optional<Warn> findById(long id) throws SQLException {
 		Warn warn = null;
 		try (var s = con.prepareStatement("SELECT * FROM warn WHERE id = ?")) {
@@ -42,6 +57,14 @@ public class WarnRepository {
 		return Optional.ofNullable(warn);
 	}
 
+	/**
+	 * Gets the total severity weight of all warns for the given user, which
+	 * were created after the given cutoff, and haven't been discarded.
+	 * @param userId The id of the user.
+	 * @param cutoff The time after which to look for warns.
+	 * @return The total weight of all warn severities.
+	 * @throws SQLException If an error occurs.
+	 */
 	public int getTotalSeverityWeight(long userId, LocalDateTime cutoff) throws SQLException {
 		try (var s = con.prepareStatement("SELECT SUM(severity_weight) FROM warn WHERE user_id = ? AND discarded = FALSE AND created_at > ?")) {
 			s.setLong(1, userId);
