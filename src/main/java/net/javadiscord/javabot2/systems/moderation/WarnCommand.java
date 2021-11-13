@@ -1,6 +1,5 @@
 package net.javadiscord.javabot2.systems.moderation;
 
-import net.javadiscord.javabot2.Bot;
 import net.javadiscord.javabot2.command.ResponseException;
 import net.javadiscord.javabot2.command.Responses;
 import net.javadiscord.javabot2.command.SlashCommandHandler;
@@ -27,7 +26,7 @@ public class WarnCommand implements SlashCommandHandler {
 				.asServerTextChannel().orElseThrow(ResponseException.warning("This command can only be used in server text channels."));
 		var quiet = interaction.getOptionBooleanValueByName("quiet").orElse(false);
 		if (user.isBot()) return Responses.warning(interaction, "Cannot warn a bot.");
-		var moderationService = new ModerationService(interaction.getApi(), Bot.config.get(channel.getServer()).getModeration());
+		var moderationService = new ModerationService(interaction);
 		moderationService.warn(user, severity, reason, interaction.getUser(), channel, quiet);
 		return Responses.successBuilder(interaction)
 				.title("User Warned")

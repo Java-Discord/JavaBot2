@@ -1,6 +1,5 @@
 package net.javadiscord.javabot2.systems.moderation;
 
-import net.javadiscord.javabot2.Bot;
 import net.javadiscord.javabot2.command.ResponseException;
 import net.javadiscord.javabot2.command.Responses;
 import net.javadiscord.javabot2.command.SlashCommandHandler;
@@ -39,7 +38,7 @@ public class MuteCommand implements SlashCommandHandler {
 							For example, `P1D` means *1 day*, and `PT30M` means *30 minutes*.""")
 					.build();
 		}
-		var moderationService = new ModerationService(interaction.getApi(), Bot.config.get(channel.getServer()).getModeration());
+		var moderationService = new ModerationService(interaction);
 		moderationService.mute(user, reason, interaction.getUser(), d, channel, quiet);
 		return Responses.successBuilder(interaction)
 				.title("User Muted")

@@ -7,18 +7,18 @@ import org.javacord.api.interaction.SlashCommandInteraction;
 import org.javacord.api.interaction.callback.InteractionImmediateResponseBuilder;
 
 /**
- * Command that unmutes a muted user.
+ * A command which clears all warns from a user.
  */
-public class UnmuteCommand implements SlashCommandHandler {
+public class ClearWarnsCommand implements SlashCommandHandler {
 	@Override
 	public InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws ResponseException {
 		var user = interaction.getOptionUserValueByName("user")
-				.orElseThrow(ResponseException.warning("Missing required user."));
+				.orElseThrow(ResponseException.warning("Missing user."));
 		var moderationService = new ModerationService(interaction);
-		moderationService.unmute(user, interaction.getUser());
+		moderationService.clearWarns(user, interaction.getUser());
 		return Responses.successBuilder(interaction)
-				.title("User Unmuted")
-				.messageFormat("User %s has been unmuted.", user.getDiscriminatedName())
+				.title("Warns Cleared")
+				.messageFormat("Cleared all warns from %s.", user.getDiscriminatedName())
 				.build();
 	}
 }

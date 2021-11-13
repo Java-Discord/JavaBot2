@@ -1,6 +1,5 @@
 package net.javadiscord.javabot2.systems.moderation;
 
-import net.javadiscord.javabot2.Bot;
 import net.javadiscord.javabot2.command.ResponseException;
 import net.javadiscord.javabot2.command.Responses;
 import net.javadiscord.javabot2.command.SlashCommandHandler;
@@ -23,7 +22,7 @@ public class BanCommand implements SlashCommandHandler {
 				.asServerTextChannel()
 				.orElseThrow(ResponseException.warning("This command can only be performed in a server text channel."));
 		var quiet = interaction.getOptionBooleanValueByName("quiet").orElse(false);
-		var moderationService = new ModerationService(interaction.getApi(), Bot.config.get(channel.getServer()).getModeration());
+		var moderationService = new ModerationService(interaction);
 		moderationService.ban(user, reason, interaction.getUser(), channel, quiet);
 		return Responses.successBuilder(interaction)
 				.title("User Banned")

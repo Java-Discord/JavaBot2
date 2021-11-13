@@ -47,6 +47,19 @@
       type: BOOLEAN
       required: false
 
+- name: clear-warns
+  description: Clears all warns from the given user.
+  handler: net.javadiscord.javabot2.systems.moderation.ClearWarnsCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  options:
+    - name: user
+      description: The user to clear warns from.
+      type: USER
+      required: true
+
 - name: ban
   description: Ban a user.
   handler: net.javadiscord.javabot2.systems.moderation.BanCommand

@@ -2,6 +2,8 @@ package net.javadiscord.javabot2.systems.moderation;
 
 
 import lombok.extern.slf4j.Slf4j;
+import net.javadiscord.javabot2.Bot;
+import net.javadiscord.javabot2.command.ResponseException;
 import net.javadiscord.javabot2.config.guild.ModerationConfig;
 import net.javadiscord.javabot2.db.DbHelper;
 import net.javadiscord.javabot2.systems.moderation.dao.MuteRepository;
@@ -15,6 +17,7 @@ import org.javacord.api.entity.channel.ServerTextChannel;
 import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.server.ServerUpdater;
 import org.javacord.api.entity.user.User;
+import org.javacord.api.interaction.SlashCommandInteraction;
 
 import java.awt.*;
 import java.time.Duration;
@@ -45,6 +48,21 @@ public class ModerationService {
 	}
 
 	/**
+	 * Constructs the service using information obtained from an interaction.
+	 * @param interaction The interaction to use.
+	 * @throws ResponseException If the interaction did not occur in the context
+	 * of a server.
+	 */
+	public ModerationService(SlashCommandInteraction interaction) throws ResponseException {
+		this(
+				interaction.getApi(),
+				Bot.config.get(interaction.getServer()
+						.orElseThrow(ResponseException.warning("The moderation service can only be used in servers.")))
+						.getModeration()
+		);
+	}
+
+	/**
 	 * Issues a warning for the given user.
 	 * @param user The user to warn.
 	 * @param severity The severity of the warning.
@@ -69,6 +87,21 @@ public class ModerationService {
 			if (totalWeight > config.getMaxWarnSeverity()) {
 				ban(user, "Too many warnings.", warnedBy, channel, quiet);
 			}
+		});
+	}
+
+	/**
+	 * Clears warns from the given user by discarding all warns.
+	 * @param user The user to clear warns from.
+	 * @param clearedBy The user who cleared the warns.
+	 * @return A future that completes when the warns have been cleared.
+	 */
+	public CompletableFuture<Void> clearWarns(User user, User clearedBy) {
+		return DbHelper.doDaoAction(WarnRepository::new, dao -> {
+			dao.discardAll(user.getId());
+			var embed = buildClearWarnsEmbed(user, clearedBy);
+			user.openPrivateChannel().thenAcceptAsync(pc -> pc.sendMessage(embed));
+			config.getLogChannel().sendMessage(embed);
 		});
 	}
 
@@ -206,6 +239,15 @@ public class ModerationService {
 				.setTimestamp(timestamp)
 				.addField("Severity", severity.name())
 				.setFooter(warnedBy.getDiscriminatedName(), warnedBy.getAvatar());
+	}
+
+	private EmbedBuilder buildClearWarnsEmbed(User user, User clearedBy) {
+		return new EmbedBuilder()
+				.setColor(Color.ORANGE)
+				.setTitle(String.format("%s | Warns Cleared", user.getDiscriminatedName()))
+				.setDescription("All warns have been cleared from " + user.getDiscriminatedName() + "'s record.")
+				.setTimestampToNow()
+				.setFooter(clearedBy.getDiscriminatedName(), clearedBy.getAvatar());
 	}
 
 	private EmbedBuilder buildBanEmbed(User user, String reason, User bannedBy) {

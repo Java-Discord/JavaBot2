@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -73,6 +75,29 @@ public class DbHelper {
 		Bot.asyncPool.submit(() -> {
 			try (var c = Bot.hikariDataSource.getConnection()) {
 				consumer.consume(c);
+				future.complete(null);
+			} catch (SQLException e) {
+				future.completeExceptionally(e);
+			}
+		});
+		return future;
+	}
+
+	/**
+	 * Does an asynchronous database action using the bot's async pool, and
+	 * wraps access to the connection behind a data access object that can be
+	 * built using the provided dao constructor.
+	 * @param daoConstructor A function to build a DAO using a connection.
+	 * @param consumer The consumer that does something with the DAO.
+	 * @param <T> The type of data access object. Usually some kind of repository.
+	 * @return A future that completes when the action is complete.
+	 */
+	public static <T> CompletableFuture<Void> doDaoAction(Function<Connection, T> daoConstructor, DaoConsumer<T> consumer) {
+		CompletableFuture<Void> future = new CompletableFuture<>();
+		Bot.asyncPool.submit(() -> {
+			try (var c = Bot.hikariDataSource.getConnection()) {
+				var dao = daoConstructor.apply(c);
+				consumer.consume(dao);
 				future.complete(null);
 			} catch (SQLException e) {
 				future.completeExceptionally(e);

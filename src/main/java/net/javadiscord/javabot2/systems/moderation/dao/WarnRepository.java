@@ -79,6 +79,20 @@ public class WarnRepository {
 		}
 	}
 
+	/**
+	 * Discards all warnings that have been issued to a given user.
+	 * @param userId The id of the user to discard warnings for.
+	 * @throws SQLException If an error occurs.
+	 */
+	public void discardAll(long userId) throws SQLException {
+		try (var s = con.prepareStatement("""
+			UPDATE warn SET discarded = TRUE
+			WHERE user_id = ?""")) {
+			s.setLong(1, userId);
+			s.executeUpdate();
+		}
+	}
+
 	private Warn read(ResultSet rs) throws SQLException {
 		Warn warn = new Warn();
 		warn.setId(rs.getLong("id"));
