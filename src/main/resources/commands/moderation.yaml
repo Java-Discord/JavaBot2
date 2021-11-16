@@ -109,6 +109,7 @@
 - name: unmute
   description: Immediately unmute a muted user.
   handler: net.javadiscord.javabot2.systems.moderation.UnmuteCommand
+  enabledByDefault: false
   privileges:
     - type: ROLE
       id: moderation.staffRoleId
