@@ -33,22 +33,6 @@ public class Bot {
 	public static HikariDataSource hikariDataSource;
 
 	/**
-	 * A thread-safe MongoDB client that can be used to interact with MongoDB.
-	 * @deprecated Use the relational data source for all future persistence
-	 * needs; it promotes more organized code that's less prone to failures.
-	 */
-	@Deprecated
-	public static MongoClient mongoClient;
-
-	/**
-	 * The single Mongo database where all bot data is stored.
-	 * @deprecated Use the relational data source for all future persistence
-	 * needs; it promotes more organized code that's less prone to failures.
-	 */
-	@Deprecated
-	public static MongoDatabase mongoDb;
-
-	/**
 	 * The bot's configuration.
 	 */
 	public static BotConfig config;
@@ -101,11 +85,11 @@ public class Bot {
 			throw new IllegalStateException("Missing required Discord bot token! Please edit config/systems.json to add it, then run again.");
 		}
 		hikariDataSource = DbHelper.initDataSource(config);
-		mongoDb = initMongoDatabase();
 	}
 
+	@Deprecated
 	private static MongoDatabase initMongoDatabase() {
-		mongoClient = new MongoClient(new MongoClientURI(config.getSystems().getMongoDatabaseUrl()));
+		var mongoClient = new MongoClient(new MongoClientURI(config.getSystems().getMongoDatabaseUrl()));
 		var db = mongoClient.getDatabase("javabot");
 		var warnCollection = db.getCollection("warn");
 		warnCollection.createIndex(Indexes.ascending("userId"), new IndexOptions().unique(false));
