@@ -86,7 +86,7 @@ public class Bot {
 			log.info("Initialized scheduled tasks.");
 		} catch (SchedulerException e) {
 			log.error("Could not initialize all scheduled tasks.", e);
-			api.disconnect();
+			api.disconnect().join();
 		}
 	}
 
