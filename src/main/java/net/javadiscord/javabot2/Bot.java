@@ -8,6 +8,7 @@ import com.mongodb.client.model.Indexes;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 import net.javadiscord.javabot2.command.SlashCommandListener;
+import net.javadiscord.javabot2.command.interaction.InteractionListener;
 import net.javadiscord.javabot2.config.BotConfig;
 import net.javadiscord.javabot2.db.DbHelper;
 import net.javadiscord.javabot2.systems.moderation.ModerationService;
@@ -81,7 +82,18 @@ public class Bot {
 				"commands/moderation.yaml"
 		);
 		api.addSlashCommandCreateListener(commandListener);
+		addEventListeners(api);
 		initScheduledTasks(api);
+	}
+
+	/**
+	 * Adds all the bot's event listeners to the Javacord instance, except for the
+	 * main {@link SlashCommandListener}.
+	 * @param api the {@link DiscordApi} instance to add listeners to.
+	 */
+	private static void addEventListeners(DiscordApi api) {
+		api.addButtonClickListener(new InteractionListener());
+		api.addSelectMenuChooseListener(new InteractionListener());
 	}
 
 	/**
