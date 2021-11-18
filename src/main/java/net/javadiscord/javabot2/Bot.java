@@ -51,7 +51,6 @@ public class Bot {
 	 */
 	public static void main(String[] args) {
 		TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
-		nu.pattern.OpenCV.loadShared();
 		initDataSources();
 		asyncPool = Executors.newScheduledThreadPool(config.getSystems().getAsyncPoolSize());
 		DiscordApi api = new DiscordApiBuilder()
