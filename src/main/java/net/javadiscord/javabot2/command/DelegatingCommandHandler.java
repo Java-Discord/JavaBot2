@@ -95,31 +95,15 @@ public class DelegatingCommandHandler implements SlashCommandHandler {
 	 */
 	@Override
 	public InteractionImmediateResponseBuilder handle(SlashCommandInteraction interaction) throws ResponseException {
-		// First we check if the event has specified a subcommand group, and if we have a group handler for it.
 		var subCommandOption = interaction.getOptionByIndex(0);
 		if (subCommandOption.isPresent() && subCommandOption.get().isSubcommandOrGroup()) {
-			SlashCommandHandler groupHandler = this.getSubcommandGroupHandlers().get(subCommandOption.get().getName());
-			if (groupHandler != null) return groupHandler.handle(interaction);
-
+			var firstOption = subCommandOption.get();
+			// TODO: Implement some way of handling subcommand groups! For now javacord is quite scuffed in that regard.
+//			SlashCommandHandler groupHandler = this.getSubcommandGroupHandlers().get(firstOption.getName());
+//			if (groupHandler != null) return groupHandler.handle(interaction);
+			SlashCommandHandler subcommandHandler = this.getSubcommandHandlers().get(firstOption.getName());
+			if (subcommandHandler != null) return subcommandHandler.handle(interaction);
 		}
-		return Responses.warning(interaction, "Delegating command handler is not yet implemented.");
-
-//		if (interaction.getCommandName() != null) {
-//			SlashCommandHandler groupHandler = this.getSubcommandGroupHandlers().get(event.getSubcommandGroup());
-//			if (groupHandler != null) {
-//				return groupHandler.handle(event);
-//			}
-//		}
-//		// If the event doesn't have a subcommand group, or no handler was found for the group, we just move on to the subcommand.
-//		if (event.getSubcommandName() == null) {
-//			return this.handleNonSubcommand(event);
-//		} else {
-//			SlashCommandHandler handler = this.getSubcommandHandlers().get(event.getSubcommandName());
-//			if (handler != null) {
-//				return handler.handle(event);
-//			} else {
-//				return Responses.warning(event, "Unknown Subcommand", "The subcommand you entered could not be found.");
-//			}
-//		}
+		return handleNonSubcommand(interaction);
 	}
 }
