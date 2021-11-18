@@ -17,7 +17,7 @@
           description: The priority of this question. Defaults to 0.
           type: INTEGER,
           required: false
-    - name: list
+    - name: list-questions
       description: Lists all queued QOTW questions.
       options:
         - name: include-used
@@ -29,5 +29,12 @@
       options:
         - name: question-id
           description: The id of the question to remove. Find ids using the `list` command.
+          type: INTEGER
+          required: true
+    - name: list-answers
+      description: Lists all answers for a given question.
+      options:
+        - name: question-id
+          description: The id of the question to find answers for.
           type: INTEGER
           required: true
