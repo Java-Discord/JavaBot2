@@ -29,6 +29,8 @@ dependencies {
     implementation 'com.h2database:h2:1.4.200'
     implementation 'com.zaxxer:HikariCP:5.0.0'
 
+    implementation 'org.quartz-scheduler:quartz:2.3.2'
+
     // Lombok annotations
     compileOnly 'org.projectlombok:lombok:1.18.22'
     annotationProcessor 'org.projectlombok:lombok:1.18.22'
@@ -36,7 +38,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
     // Logging
-    implementation 'ch.qos.logback:logback-classic:1.2.6'
+    implementation 'ch.qos.logback:logback-classic:1.2.7'
 
     // JUnit tests
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'

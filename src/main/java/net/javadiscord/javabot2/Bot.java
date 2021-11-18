@@ -10,17 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 import net.javadiscord.javabot2.command.SlashCommandListener;
 import net.javadiscord.javabot2.config.BotConfig;
 import net.javadiscord.javabot2.db.DbHelper;
-import net.javadiscord.javabot2.systems.moderation.ModerationService;
+import net.javadiscord.javabot2.tasks.ScheduledTasks;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.intent.Intent;
+import org.quartz.SchedulerException;
 
 import java.nio.file.Path;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The main program entry point.
@@ -31,22 +31,6 @@ public class Bot {
 	 * A connection pool that can be used to obtain new JDBC connections.
 	 */
 	public static HikariDataSource hikariDataSource;
-
-	/**
-	 * A thread-safe MongoDB client that can be used to interact with MongoDB.
-	 * @deprecated Use the relational data source for all future persistence
-	 * needs; it promotes more organized code that's less prone to failures.
-	 */
-	@Deprecated
-	public static MongoClient mongoClient;
-
-	/**
-	 * The single Mongo database where all bot data is stored.
-	 * @deprecated Use the relational data source for all future persistence
-	 * needs; it promotes more organized code that's less prone to failures.
-	 */
-	@Deprecated
-	public static MongoDatabase mongoDb;
 
 	/**
 	 * The bot's configuration.
@@ -82,7 +66,13 @@ public class Bot {
 				"commands/moderation.yaml", "commands/activity.yaml"
 		);
 		api.addSlashCommandCreateListener(commandListener);
-		initScheduledTasks(api);
+		try {
+			ScheduledTasks.init(api);
+			log.info("Initialized scheduled tasks.");
+		} catch (SchedulerException e) {
+			log.error("Could not initialize all scheduled tasks.", e);
+			api.disconnect().join();
+		}
 	}
 
 	/**
@@ -96,24 +86,15 @@ public class Bot {
 			throw new IllegalStateException("Missing required Discord bot token! Please edit config/systems.json to add it, then run again.");
 		}
 		hikariDataSource = DbHelper.initDataSource(config);
-		mongoDb = initMongoDatabase();
 	}
 
+	@Deprecated
 	private static MongoDatabase initMongoDatabase() {
-		mongoClient = new MongoClient(new MongoClientURI(config.getSystems().getMongoDatabaseUrl()));
+		var mongoClient = new MongoClient(new MongoClientURI(config.getSystems().getMongoDatabaseUrl()));
 		var db = mongoClient.getDatabase("javabot");
 		var warnCollection = db.getCollection("warn");
 		warnCollection.createIndex(Indexes.ascending("userId"), new IndexOptions().unique(false));
 		warnCollection.createIndex(Indexes.descending("createdAt"), new IndexOptions().unique(false));
 		return db;
-	}
-
-	private static void initScheduledTasks(DiscordApi api) {
-		// Regularly check for and unmute users whose mutes have expired.
-		asyncPool.scheduleAtFixedRate(() -> {
-			for (var server : api.getServers()) {
-				new ModerationService(api, config.get(server).getModeration()).unmuteExpired();
-			}
-		}, 1L, 1L, TimeUnit.MINUTES);
 	}
 }
