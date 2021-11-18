@@ -1,3 +1,5 @@
+-- Moderation Tables
+
 CREATE TABLE warn (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
@@ -18,3 +20,29 @@ CREATE TABLE mute (
     ends_at TIMESTAMP(0) NOT NULL,
     discarded BOOL NOT NULL DEFAULT FALSE
 );
+
+-- Activity Tables
+
+CREATE TABLE qotw_question (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    question VARCHAR(1024) NOT NULL,
+    priority INT NOT NULL DEFAULT 0,
+    active BOOL NOT NULL DEFAULT FALSE,
+    activated_at TIMESTAMP(0) NULL DEFAULT NULL,
+    used BOOL NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE qotw_answer (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    created_by BIGINT NOT NULL,
+    created_at TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    answer CLOB NOT NULL,
+    question_id BIGINT NOT NULL,
+    accepted BOOL NULL DEFAULT NULL,
+    FOREIGN KEY (question_id) REFERENCES qotw_question(id)
+        ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+

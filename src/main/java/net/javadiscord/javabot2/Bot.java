@@ -67,6 +67,7 @@ public class Bot {
 	 */
 	public static void main(String[] args) {
 		TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
+		nu.pattern.OpenCV.loadShared();
 		initDataSources();
 		asyncPool = Executors.newScheduledThreadPool(config.getSystems().getAsyncPoolSize());
 		DiscordApi api = new DiscordApiBuilder()
@@ -78,7 +79,7 @@ public class Bot {
 		SlashCommandListener commandListener = new SlashCommandListener(
 				api,
 				args.length > 0 && args[0].equalsIgnoreCase("--register-commands"),
-				"commands/moderation.yaml"
+				"commands/moderation.yaml", "commands/activity.yaml"
 		);
 		api.addSlashCommandCreateListener(commandListener);
 		initScheduledTasks(api);
