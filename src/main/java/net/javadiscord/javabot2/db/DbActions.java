@@ -55,4 +55,16 @@ public class DbActions {
 		});
 		return future;
 	}
+
+	public static <T> CompletableFuture<T> doAction(ConnectionFunction<T> function) {
+		CompletableFuture<T> future = new CompletableFuture<>();
+		Bot.asyncPool.submit(() -> {
+			try (var c = Bot.hikariDataSource.getConnection()) {
+				future.complete(function.apply(c));
+			} catch (SQLException e) {
+				future.completeExceptionally(e);
+			}
+		});
+		return future;
+	}
 }

@@ -15,7 +15,7 @@
           required: true
         - name: priority
           description: The priority of this question. Defaults to 0.
-          type: INTEGER,
+          type: INTEGER
           required: false
     - name: list-questions
       description: Lists all queued QOTW questions.
