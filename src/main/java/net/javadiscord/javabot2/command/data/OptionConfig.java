@@ -24,7 +24,7 @@ public class OptionConfig {
 	 */
 	public SlashCommandOptionBuilder toData() {
 		var builder = new SlashCommandOptionBuilder()
-				.setType(SlashCommandOptionType.valueOf(this.type.toUpperCase()))
+				.setType(SlashCommandOptionType.valueOf(this.type.trim().toUpperCase()))
 				.setName(this.name)
 				.setDescription(this.description)
 				.setRequired(this.required);

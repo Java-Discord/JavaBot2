@@ -30,7 +30,7 @@ public class CommandDataLoader {
 				continue;
 			}
 			CommandConfig[] cs = yaml.loadAs(is, CommandConfig[].class);
-			commands.addAll(Arrays.stream(cs).toList());
+			if (cs != null)	commands.addAll(Arrays.stream(cs).toList());
 		}
 		return commands.toArray(new CommandConfig[0]);
 	}

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javadiscord.javabot2.Bot;
 import net.javadiscord.javabot2.command.ResponseException;
 import net.javadiscord.javabot2.config.guild.ModerationConfig;
-import net.javadiscord.javabot2.db.DbHelper;
+import net.javadiscord.javabot2.db.DbActions;
 import net.javadiscord.javabot2.systems.moderation.dao.MuteRepository;
 import net.javadiscord.javabot2.systems.moderation.dao.WarnRepository;
 import net.javadiscord.javabot2.systems.moderation.model.Mute;
@@ -73,8 +73,7 @@ public class ModerationService {
 	 * @return A future that completes when all warn operations are complete.
 	 */
 	public CompletableFuture<Void> warn(User user, WarnSeverity severity, String reason, User warnedBy, ServerTextChannel channel, boolean quiet) {
-		return DbHelper.doDbAction(con -> {
-			var repo = new WarnRepository(con);
+		return DbActions.doDaoAction(WarnRepository::new, repo -> {
 			var warn = repo.insert(new Warn(user.getId(), warnedBy.getId(), severity, reason));
 			LocalDateTime cutoff = LocalDateTime.now().minusDays(config.getWarnTimeoutDays());
 			int totalWeight = repo.getTotalSeverityWeight(user.getId(), cutoff);
@@ -97,7 +96,7 @@ public class ModerationService {
 	 * @return A future that completes when the warns have been cleared.
 	 */
 	public CompletableFuture<Void> clearWarns(User user, User clearedBy) {
-		return DbHelper.doDaoAction(WarnRepository::new, dao -> {
+		return DbActions.doDaoAction(WarnRepository::new, dao -> {
 			dao.discardAll(user.getId());
 			var embed = buildClearWarnsEmbed(user, clearedBy);
 			user.openPrivateChannel().thenAcceptAsync(pc -> pc.sendMessage(embed));
@@ -142,7 +141,7 @@ public class ModerationService {
 	 * @return A future that completes when muting is done.
 	 */
 	public CompletableFuture<Void> mute(User user, String reason, User mutedBy, Duration duration, ServerTextChannel channel, boolean quiet) {
-		return DbHelper.doDbAction(con -> {
+		return DbActions.doAction(con -> {
 			con.setAutoCommit(false);
 			var repo = new MuteRepository(con);
 			var embed = buildMuteEmbed(user, reason, duration, mutedBy);
@@ -193,7 +192,7 @@ public class ModerationService {
 	 * @return A future that completes when the user is unmuted.
 	 */
 	public CompletableFuture<Void> unmute(User user, User unmutedBy) {
-		return DbHelper.doDbAction(con -> {
+		return DbActions.doAction(con -> {
 			var repo = new MuteRepository(con);
 			repo.discardAllActive(user.getId());
 			user.removeRole(config.getMuteRole());
@@ -208,7 +207,7 @@ public class ModerationService {
 	 * @return A future that completes when all expired mutes have been processed.
 	 */
 	public CompletableFuture<Void> unmuteExpired() {
-		return DbHelper.doDbAction(con -> {
+		return DbActions.doAction(con -> {
 			con.setAutoCommit(false);
 			var repo = new MuteRepository(con);
 			ServerUpdater updater = new ServerUpdater(config.getGuild());

@@ -1,0 +1,40 @@
+- name: qotw
+  description: Manage the Question of the Week information.
+  handler: net.javadiscord.javabot2.systems.activity.qotw.QOTWCommand
+  enabledByDefault: false
+  privileges:
+    - type: ROLE
+      id: moderation.staffRoleId
+  subCommands:
+    - name: add-question
+      description: Add a new question to the QOTW queue.
+      options:
+        - name: question
+          description: The question to ask.
+          type: STRING
+          required: true
+        - name: priority
+          description: The priority of this question. Defaults to 0.
+          type: INTEGER
+          required: false
+    - name: list-questions
+      description: Lists all queued QOTW questions.
+      options:
+        - name: include-used
+          description: Should used questions be included in the results? Defaults to False.
+          type: BOOLEAN
+          required: false
+    - name: remove-question
+      description: Removes a question from the QOTW queue. Only unused and inactive questions can be removed.
+      options:
+        - name: question-id
+          description: The id of the question to remove. Find ids using the `list` command.
+          type: INTEGER
+          required: true
+    - name: list-answers
+      description: Lists all answers for a given question.
+      options:
+        - name: question-id
+          description: The id of the question to find answers for.
+          type: INTEGER
+          required: true

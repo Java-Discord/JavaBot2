@@ -39,7 +39,7 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 			this.commandHandlers = new HashMap<>();
 			registerSlashCommands(api, resources)
 					.thenAcceptAsync(commandHandlers::putAll)
-					.thenRun(() -> log.info("Registered all slash commands."));
+					.thenRun(() -> log.info("Registered and updated all slash commands."));
 		} else {
 			this.commandHandlers = initializeHandlers(CommandDataLoader.load(resources));
 			log.info("Registered all slash commands.");
@@ -74,6 +74,7 @@ public final class SlashCommandListener implements SlashCommandCreateListener {
 					Map<String, Long> nameToId = new HashMap<>();
 					for (var slashCommand : slashCommands) {
 						nameToId.put(slashCommand.getName(), slashCommand.getId());
+						log.info("Updated slash command {}.", slashCommand.getName());
 					}
 					return updatePermissions(api, commandConfigs, nameToId)
 							.thenRun(() -> log.info("Updated permissions for all slash commands."))

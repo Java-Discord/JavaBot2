@@ -22,6 +22,8 @@ dependencies {
     implementation 'org.yaml:snakeyaml:1.29'
     implementation 'com.google.code.gson:gson:2.8.9'
 
+    implementation 'org.openpnp:opencv:4.5.1-2'
+
     // Persistence Dependencies
     implementation 'org.mongodb:mongodb-driver:3.12.10'
     implementation 'com.h2database:h2:1.4.200'
